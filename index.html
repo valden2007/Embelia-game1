@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Эмбедия: Истоки Алатар</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>📜 Проклятие Алатар: начало</h1>
+            <p class="subtitle">Текстовая приключенческая игра</p>
+        </header>
+
+        <section class="status-bar">
+            <div class="status-item">
+                <span class="status-label">❤️ Здоровье</span>
+                <div class="status-bar-fill"><div id="health-bar" class="bar health"></div></div>
+                <span id="health-text" class="status-value">80/100</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">💧 Мана</span>
+                <div class="status-bar-fill"><div id="mana-bar" class="bar mana"></div></div>
+                <span id="mana-text" class="status-value">40/50</span>
+            </div>
+            <div class="status-item">
+    <span class="status-label">⚡ Контроль</span>
+    <span id="control-text" class="status-value">50</span>
+</div>
+<div class="status-item">
+    <span class="status-label">🌀 Резонанс</span>
+    <span id="corruption-text" class="status-value">0%</span>
+</div>
+        </section>
+
+        <section class="location-info">
+            <h2 id="location-name">Загрузка...</h2>
+        </section>
+
+        <main class="game-log" id="game-log">
+            <div class="log-entry system"><p>Добро пожаловать в Эмбедию, путник...</p></div>
+        </main>
+
+        <section class="actions-panel">
+            <div id="action-buttons" class="button-grid"></div>
+        </section>
+
+        <section class="inventory-panel">
+            <h3>🎒 Инвентарь</h3>
+            <div id="inventory-list" class="inventory-grid">
+                <p class="empty-message">Пусто...</p>
+            </div>
+        </section>
+
+        <section class="system-controls">
+            <button id="save-btn" class="system-btn">💾 Сохранить</button>
+            <button id="load-btn" class="system-btn">📂 Загрузить</button>
+            <button id="reset-btn" class="system-btn danger">🔄 Новая игра</button>
+        </section>
+
+        <footer class="game-footer">
+            <p>Курсовой проект по МДК.02.02 | Студент: Лугов Яромир Геннадьевич</p>
+        </footer>
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-title">Сообщение</h3>
+            <p id="modal-message"></p>
+            <button id="modal-close" class="system-btn">Закрыть</button>
+        </div>
+    </div>
+
+        <script src="js/data.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

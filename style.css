@@ -1,0 +1,421 @@
+/* ===== Глобальные стили ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* ===== Контейнер игры ===== */
+.game-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+    border: 2px solid #4a4a6a;
+}
+
+/* ===== Заголовок ===== */
+.game-header {
+    text-align: center;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #4a4a6a;
+    padding-bottom: 15px;
+}
+
+.game-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: #9d4edd;
+    text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #a0a0a0;
+    font-size: 1rem;
+    font-style: italic;
+}
+
+/* ===== Панель статуса ===== */
+.status-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+    background: rgba(30, 30, 50, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #4a4a6a;
+}
+
+.status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.status-label {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+}
+
+.status-bar-fill {
+    width: 100%;
+    height: 20px;
+    background: #2a2a4a;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #4a4a6a;
+}
+
+.bar {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.bar.health {
+    background: linear-gradient(90deg, #ff4757, #ff6b81);
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+}
+
+.bar.mana {
+    background: linear-gradient(90deg, #3742fa, #5352ed);
+    box-shadow: 0 0 10px rgba(55, 66, 250, 0.5);
+}
+
+.status-value {
+    font-weight: 600;
+    color: #e0e0e0;
+    font-size: 1rem;
+}
+
+/* ===== Информация о локации ===== */
+.location-info {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(40, 40, 60, 0.6);
+    border-radius: 10px;
+    border: 1px solid #4a4a6a;
+}
+
+.location-info h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    color: #ffd700;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+/* ===== Игровой лог ===== */
+.game-log {
+    background: rgba(20, 20, 35, 0.9);
+    border: 2px solid #4a4a6a;
+    border-radius: 10px;
+    padding: 20px;
+    height: 300px;
+    overflow-y: auto;
+    margin-bottom: 25px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.log-entry {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-left: 3px solid #4a4a6a;
+    animation: fadeIn 0.5s ease;
+}
+
+.log-entry.system {
+    border-left-color: #9d4edd;
+    color: #c77dff;
+}
+
+.log-entry.combat {
+    border-left-color: #ff4757;
+    color: #ff8787;
+}
+
+.log-entry.item {
+    border-left-color: #ffd700;
+    color: #ffeaa7;
+}
+
+.log-entry.dialogue {
+    border-left-color: #3742fa;
+    color: #74b9ff;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Панель действий ===== */
+.actions-panel {
+    margin-bottom: 25px;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, #4a4a6a 0%, #2a2a4a 100%);
+    color: #e0e0e0;
+    border: 2px solid #6a6a8a;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Roboto', sans-serif;
+}
+
+.action-btn:hover {
+    background: linear-gradient(135deg, #6a6a8a 0%, #4a4a6a 100%);
+    border-color: #9d4edd;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== Инвентарь ===== */
+.inventory-panel {
+    background: rgba(30, 30, 50, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #4a4a6a;
+    margin-bottom: 25px;
+}
+
+.inventory-panel h3 {
+    font-family: 'Cormorant Garamond', serif;
+    color: #ffd700;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.inventory-item {
+    background: rgba(40, 40, 60, 0.6);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #4a4a6a;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.inventory-item:hover {
+    border-color: #9d4edd;
+    background: rgba(60, 60, 80, 0.8);
+    transform: scale(1.05);
+}
+
+.empty-message {
+    color: #808080;
+    font-style: italic;
+    grid-column: 1 / -1;
+    text-align: center;
+}
+
+/* ===== Системные кнопки ===== */
+.system-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.system-btn {
+    background: linear-gradient(135deg, #2a2a4a 0%, #1a1a2e 100%);
+    color: #e0e0e0;
+    border: 2px solid #4a4a6a;
+    padding: 10px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.system-btn:hover {
+    border-color: #9d4edd;
+    background: linear-gradient(135deg, #3a3a5a 0%, #2a2a4a 100%);
+}
+
+.system-btn.danger {
+    border-color: #ff4757;
+}
+
+.system-btn.danger:hover {
+    background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+    border-color: #ff4757;
+}
+
+/* ===== Footer ===== */
+.game-footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #4a4a6a;
+    color: #808080;
+    font-size: 0.85rem;
+}
+
+/* ===== Модальное окно ===== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 30px;
+    border-radius: 15px;
+    border: 2px solid #9d4edd;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(157, 78, 221, 0.5);
+}
+
+.modal-content h3 {
+    font-family: 'Cormorant Garamond', serif;
+    color: #9d4edd;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    color: #e0e0e0;
+}
+
+/* ===== Адаптивность для мобильных ===== */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .game-container {
+        padding: 15px;
+    }
+
+    .game-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .status-bar {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .game-log {
+        height: 200px;
+        font-size: 1rem;
+    }
+
+    .button-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .system-controls {
+        flex-direction: column;
+    }
+
+    .system-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .status-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .button-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .inventory-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ===== Скроллбар ===== */
+.game-log::-webkit-scrollbar {
+    width: 8px;
+}
+
+.game-log::-webkit-scrollbar-track {
+    background: #1a1a2e;
+    border-radius: 4px;
+}
+
+.game-log::-webkit-scrollbar-thumb {
+    background: #4a4a6a;
+    border-radius: 4px;
+}
+
+.game-log::-webkit-scrollbar-thumb:hover {
+    background: #6a6a8a;
+}
+
+/* ===== Анимации ===== */
+@keyframes flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; background: #fff; }
+    100% { opacity: 1; }
+}
+
+.game-container.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.game-container.fade-in {
+    opacity: 1;
+    pointer-events: all;
+}
