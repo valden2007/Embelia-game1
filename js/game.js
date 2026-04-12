@@ -1,12 +1,13 @@
 const Game = {
-    inCombat: false, 
-    turn: 0, 
-    storyStep: 0, 
-    isFaded: false, 
+    inCombat: false,
+    turn: 0,
+    storyStep: 0,
+    isFaded: false,
     sequenceStep: 0,
     currentDialogue: null,
     herbsNeeded: 3,
     herbsCollected: 0,
+    healInterval: null,
 
     init() {
         if (!this.checkDependencies()) {
@@ -105,24 +106,26 @@ const Game = {
 
     nextTurn() {
         this.turn++;
+        // ✅ ИСПРАВЛЕНО: Добавлен ледяной щит, пробитие и эффект яда
         const prompts = [
-            "Хвост пробил щит. Яд жжёт вены.",
-            "В памяти крик: «Беги, Нини!».",
-            "Силы на исходе."
+            "Ниниэль успела выставить ледяной щит, но хвост Василиска с оглушительным хрустом пробил его. Острые шипы впились в бок, а на хвосте мерцал яд. По телу разлилась слабость, сознание начало мутнеть...",
+            "В памяти крик: «Беги, Нини!». Яд жжёт вены, ноги подкашиваются.",
+            "Силы на исходе. Тьма подступает к краям зрения."
         ];
+        
         UI.log(prompts[this.turn-1] || "Держись!", 'combat');
         UI.renderButtons([
             { label: '⚔️ Атаковать', handler: () => { 
-                UI.log('Удар бесполезен.', 'combat'); 
+                UI.log('Удар бесполезен. Чешуя непробиваема.', 'combat'); 
                 this.enemyTurn(); 
             }},
             { label: '🛡️ Заблокировать', handler: () => { 
-                UI.log('Блок ослабил удар.', 'system'); 
+                UI.log('Блок ослабил удар, но яд продолжает действовать.', 'system'); 
                 window.player.isDefending = true; 
                 this.enemyTurn(); 
             }},
             { label: '🏃 Уклониться', handler: () => { 
-                UI.log('Едва уворачиваешься.', 'combat'); 
+                UI.log('Едва уворачиваешься. Голова кружится от яда.', 'combat'); 
                 this.enemyTurn(); 
             }}
         ]);
@@ -167,8 +170,8 @@ const Game = {
                 UI.fadeScreen('out'); 
                 this.isFaded = true;
                 setTimeout(() => {
-                    window.player.health = window.player.maxHealth; 
-                    window.player.mana = window.player.maxMana;
+                    // НЕ восстанавливаем здоровье полностью!
+                    window.player.mana = Math.min(window.player.maxMana, window.player.mana + 20);
                     UI.updateStatus();
                     this.loadLocation("walden_hut");
                 }, 2000);
@@ -186,7 +189,10 @@ const Game = {
         
         window.player.currentLocation = id;
         UI.updateLocation(loc.name);
-        UI.log(`📍 ${loc.description}`, 'system');
+        
+        // ✅ ИСПРАВЛЕНО: Убрано авто-дублирование описания в лог.
+        // Выводим только короткий атмосферный переход:
+        UI.log(`📍 Переход: ${loc.name}`, 'system');
         
         if (this.isFaded) { 
             UI.fadeScreen('in'); 
@@ -414,6 +420,11 @@ const Game = {
                 UI.log(`🌿 Найдено: ${gameData.items[herb].name}`, 'item');
             }
         }
+
+        // Обработка мгновенного лечения без спама
+        if (node.action === "heal_player") {
+            this.healGradually(); // ✅ Запускаем плавное лечение
+        }
         
         if (node.choices) {
             const buttons = node.choices.map(choice => ({
@@ -441,7 +452,7 @@ const Game = {
                 this.loadLocation("phantom_ambush");
                 return;
             }
-            if (node.next === 'training_minigame') {
+            if (node.next === 'training_minigame' || node.next === 'training_minigame_first') {
                 setTimeout(() => this.startTraining(), 1000);
                 return;
             }
@@ -450,23 +461,53 @@ const Game = {
                 label: '➡️ Далее', 
                 handler: () => this.runStoryNode(node.next) 
             }]);
-        } else if (node.next === 'training_minigame') {
+        } else if (node.next === 'training_minigame' || node.next === 'training_minigame_first') {
             setTimeout(() => this.startTraining(), 1000);
         }
     },
 
     startTraining() {
-        UI.log('✨ <b>ОБУЧЕНИЕ: МАГИЯ СВЕТА</b>', 'system');
-        UI.log('«Вспомни момент безопасности».', 'dialogue');
-        UI.showParticleGame(() => this.onTrainingComplete());
+        console.log('🎮 Запуск тренировки с частицами...');
+        UI.log('✨ <b>ПЕРВАЯ ТРЕНИРОВКА: ЛОВЛЯ ЧАСТИЦ СВЕТА</b>', 'system');
+        UI.log('— Теперь попробуй на практике! Лови частицы чистого Света, избегай Тьмы.', 'dialogue');
+        
+        // Запускаем мини-игру
+        UI.showParticleGame(() => {
+            console.log('✅ Мини-игра завершена, продолжаем сюжет...');
+            this.onTrainingComplete();
+        });
     },
 
     onTrainingComplete() {
-        window.player.mana = window.player.maxMana; 
+        window.player.mana = window.player.maxMana;
         window.player.addControl(15);
         UI.updateStatus();
-        UI.log('Посох вспыхнул. «Лучше. Но должно быть как маяк».', 'item');
-        this.runStoryNode('herb_quest_intro');
+        UI.log('— Неплохо для начала, — кивнул Вальден. — Но светит, как фонарь у двери. А должно — как маяк для тех, кто заблудился во тьме.', 'dialogue');
+        UI.log('— Лучше, — кивнул Вальден. — Но это только начало. Теперь ты понимаешь, как работает свет.', 'dialogue');
+        this.runStoryNode('training_why_save_me');
+    },
+
+    // ✅ ПЛАВНОЕ ЛЕЧЕНИЕ БЕЗ СПАМА
+    healGradually() {
+        if (this.healInterval) clearInterval(this.healInterval);
+        
+        UI.log('🍵 Зелье действует... Силы постепенно возвращаются.', 'item');
+        
+        let currentHP = window.player.health;
+        const targetHP = window.player.maxHealth;
+        
+        this.healInterval = setInterval(() => {
+            if (currentHP < targetHP) {
+                currentHP += 2; // Скорость лечения
+                if (currentHP > targetHP) currentHP = targetHP;
+                window.player.health = currentHP;
+                UI.updateStatus(); // Просто обновляем полоску, НЕ пишем в лог
+            } else {
+                clearInterval(this.healInterval);
+                this.healInterval = null;
+                UI.log('✨ Здоровье полностью восстановлено.', 'item');
+            }
+        }, 300); // Интервал обновления (чем меньше, тем плавнее)
     },
 
     renderActions(loc) {

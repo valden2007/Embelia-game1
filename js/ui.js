@@ -1,6 +1,5 @@
 // js/ui.js
 // Модуль управления интерфейсом игры "Проклятие Алатар"
-
 const UI = {
     // === ЭЛЕМЕНТЫ DOM ===
     elements: {
@@ -11,10 +10,8 @@ const UI = {
         manaBar: null,
         manaText: null,
         levelText: null,
-        // corruption-text используем для отображения РЕЗОНАНСА
-        resonanceText: document.getElementById('corruption-text'), 
-        // control-text используем для КОНТРОЛЯ
-        controlText: document.getElementById('control-text'),
+        resonanceText: null,
+        controlText: null,
         actionButtons: null,
         inventoryList: null,
         modal: null,
@@ -41,8 +38,8 @@ const UI = {
             manaBar: document.getElementById('mana-bar'),
             manaText: document.getElementById('mana-text'),
             levelText: document.getElementById('level-text'),
-            resonanceText: document.getElementById('corruption-text'), // ID из твоего HTML
-            controlText: document.getElementById('control-text'),   // ID из твоего HTML
+            resonanceText: document.getElementById('corruption-text'),
+            controlText: document.getElementById('control-text'),
             actionButtons: document.getElementById('action-buttons'),
             inventoryList: document.getElementById('inventory-list'),
             modal: document.getElementById('modal'),
@@ -131,7 +128,7 @@ const UI = {
         // 4. РЕЗОНАНС (Ранее Коррупция) - Шкала силы Алатар
         if (this.elements.resonanceText) {
             this.elements.resonanceText.textContent = `🌀 ${p.resonance}%`;
-            
+             
             // Цвет зависит от уровня опасности
             if (p.resonance >= 90) {
                 this.elements.resonanceText.style.color = '#ff0000'; // Критично (плохая концовка)
@@ -291,38 +288,58 @@ const UI = {
 
     // === МИНИ-ИГРА: ЛОВЛЯ ЧАСТИЦ СВЕТА (Обучение с Вальденом) ===
     showParticleGame(onComplete) {
+        console.log('🎮 Запуск мини-игры с частицами...');
+        
         // Создаём контейнер, если нет
         let gameArea = document.getElementById('particle-game-area');
         if (!gameArea) {
             gameArea = document.createElement('div');
             gameArea.id = 'particle-game-area';
-            gameArea.style.cssText = 'margin:20px 0; text-align:center; padding:20px; background:rgba(20,20,40,0.9); border-radius:15px; border:2px solid #9d4edd; position:relative; min-height:320px;';
+            gameArea.style.cssText = 'margin:20px 0; text-align:center; padding:20px; background:rgba(20,20,40,0.95); border-radius:15px; border:2px solid #9d4edd; position:relative; min-height:350px;';
+            
             const actionsPanel = document.querySelector('.actions-panel');
             if (actionsPanel && actionsPanel.parentNode) {
                 actionsPanel.parentNode.insertBefore(gameArea, actionsPanel);
+            } else {
+                const log = document.getElementById('game-log');
+                if (log && log.parentNode) {
+                    log.parentNode.insertBefore(gameArea, log.nextSibling);
+                }
             }
         }
         
         gameArea.style.display = 'block';
         gameArea.innerHTML = `
-            <h3 style="color:#ffd700; margin:0 0 10px 0; font-family:'Cormorant Garamond',serif;">✨ Гармония Стихий ✨</h3>
-            <p style="color:#b0b0b0; margin:0 0 15px 0; font-size:0.9em;">Лови частицы чистого Света (Белые/Золотые).<br>Избегай Тьмы (Фиолетовые).</p>
-            <div id="particle-container" style="position:relative; height:220px; background:rgba(0,0,0,0.7); border-radius:10px; overflow:hidden; border:1px solid #4a4a6a; margin-bottom:15px;"></div>
-            <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:10px; color:#e0e0e0; font-size:0.95em;">
-                <span>⚖️ Гармония: <span id="pg-harmony">0</span>%</span>
-                <span>🌑 Хаос: <span id="pg-chaos">0</span>%</span>
+            <h3 style="color:#ffd700; margin:0 0 15px 0; font-family:'Cormorant Garamond',serif; font-size:1.5em;">✨ Гармония Стихий ✨</h3>
+            <p style="color:#b0b0b0; margin:0 0 20px 0; font-size:0.95em;">Лови частицы чистого Света (Белые/Золотые).<br>Избегай Тьмы (Фиолетовые).<br>Набери 100% гармонии!</p>
+            <div id="particle-container" style="position:relative; height:250px; background:rgba(0,0,0,0.8); border-radius:12px; overflow:hidden; border:2px solid #4a4a6a; margin-bottom:20px; box-shadow:inset 0 0 20px rgba(157,78,221,0.3);"></div>
+            <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:15px; color:#e0e0e0; font-size:1.1em; font-weight:bold;">
+                <span style="color:#ffd700;">⚖️ Гармония: <span id="pg-harmony">0</span>%</span>
+                <span style="color:#4b0082;">🌑 Хаос: <span id="pg-chaos">0</span>%</span>
             </div>
+            <button id="particle-game-close" style="margin-top:15px; padding:10px 25px; background:#4a4a6a; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:1em;">Закрыть</button>
         `;
 
         const container = document.getElementById('particle-container');
         const harmonyEl = document.getElementById('pg-harmony');
         const chaosEl = document.getElementById('pg-chaos');
+        const closeBtn = document.getElementById('particle-game-close');
+
+        // Кнопка закрытия
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                gameArea.style.display = 'none';
+                if (typeof onComplete === 'function') {
+                    onComplete();
+                }
+            };
+        }
 
         // Настройки частиц
         const elements = {
-            light: { name: "Свет", color: "#ffd700", glow: "0 0 12px #ffd700", type: "good", bonus: 12, message: "✨ Чистый свет! Посох отзывается теплом." },
-            water: { name: "Вода", color: "#1E90FF", glow: "0 0 12px #1E90FF", type: "good", bonus: 10, message: "💧 Глубина и покой." },
-            dark:  { name: "Тьма", color: "#4b0082", glow: "0 0 12px #4b0082", type: "bad", penalty: 18, message: "🌑 Тёмная энергия! Хаос растёт." }
+            light: { name: "Свет", color: "#ffd700", glow: "0 0 15px #ffd700", type: "good", bonus: 12, message: "✨ Чистый свет! Посох отзывается теплом." },
+            water: { name: "Вода", color: "#1E90FF", glow: "0 0 15px #1E90FF", type: "good", bonus: 10, message: "💧 Глубина и покой." },
+            dark:  { name: "Тьма", color: "#4b0082", glow: "0 0 15px #4b0082", type: "bad", penalty: 18, message: "🌑 Тёмная энергия! Хаос растёт." }
         };
 
         let harmony = 0;
@@ -330,9 +347,10 @@ const UI = {
         let particles = [];
         let spawnInterval;
         let gameActive = true;
+        let animationId;
 
         function createParticle() {
-            if (!gameActive) return;
+            if (!gameActive || !container) return;
             
             // Вероятности: Свет чаще, Тьма реже
             const rand = Math.random();
@@ -342,22 +360,35 @@ const UI = {
             else key = 'dark';                   // 25% Тьма
 
             const cfg = elements[key];
-            const size = 18 + Math.random() * 12; 
+            const size = 20 + Math.random() * 15; 
             const particle = document.createElement('div');
             
             particle.style.cssText = `
-                position:absolute; width:${size}px; height:${size}px; background:radial-gradient(circle, ${cfg.color} 30%, transparent 70%); 
+                position:absolute; width:${size}px; height:${size}px; 
+                background:radial-gradient(circle, ${cfg.color} 30%, transparent 70%); 
                 border-radius:50%; left:${Math.random() * (container.offsetWidth - size)}px; top:-${size}px;
                 cursor:pointer; box-shadow:${cfg.glow}; transition:transform 0.15s; z-index:10;
             `;
             particle.dataset.type = key;
             
+            particle.onmouseenter = () => {
+                if (!gameActive) return;
+                particle.style.transform = 'scale(1.5)';
+            };
+            
+            particle.onmouseleave = () => {
+                if (!gameActive) return;
+                particle.style.transform = 'scale(1)';
+            };
+            
             particle.onclick = () => {
                 if (!gameActive) return;
                 
-                particle.style.transform = 'scale(1.8)';
+                particle.style.transform = 'scale(2)';
                 particle.style.opacity = '0';
-                setTimeout(() => particle.remove(), 150);
+                setTimeout(() => {
+                    if (particle.parentNode) particle.remove();
+                }, 150);
                 
                 if (cfg.type === 'good') {
                     harmony = Math.min(100, harmony + cfg.bonus);
@@ -367,19 +398,24 @@ const UI = {
                     UI.log(cfg.message, 'combat');
                 }
                 
-                harmonyEl.textContent = harmony;
-                chaosEl.textContent = chaos;
+                if (harmonyEl) harmonyEl.textContent = harmony;
+                if (chaosEl) chaosEl.textContent = chaos;
                 checkEndGame();
             };
             
             container.appendChild(particle);
-            particles.push({ el: particle, speed: 1.2 + Math.random() * 1.8, drift: (Math.random() - 0.5) * 0.5 });
+            particles.push({ el: particle, speed: 1.5 + Math.random() * 2, drift: (Math.random() - 0.5) * 0.8 });
         }
 
         function animate() {
-            if (!gameActive) return;
+            if (!gameActive || !container) return;
             
             particles.forEach((p, index) => {
+                if (!p.el || !p.el.parentNode) {
+                    particles.splice(index, 1);
+                    return;
+                }
+                
                 const top = parseFloat(p.el.style.top) || 0;
                 const left = parseFloat(p.el.style.left) || 0;
                 
@@ -387,12 +423,12 @@ const UI = {
                 p.el.style.left = (left + p.drift) + 'px';
                 
                 if (top > container.offsetHeight) {
-                    p.el.remove();
+                    if (p.el.parentNode) p.el.remove();
                     particles.splice(index, 1);
                 }
             });
             
-            requestAnimationFrame(animate);
+            animationId = requestAnimationFrame(animate);
         }
 
         function checkEndGame() {
@@ -403,6 +439,7 @@ const UI = {
         function endGame(success) {
             gameActive = false;
             clearInterval(spawnInterval);
+            if (animationId) cancelAnimationFrame(animationId);
             
             if (success) {
                 UI.log('🏆 Гармония достигнута! Ты научилась чувствовать Свет!', 'system');
@@ -411,18 +448,23 @@ const UI = {
                     if (typeof onComplete === 'function') {
                         onComplete();
                     }
-                }, 1000);
+                }, 1500);
             } else {
                 UI.log('💫 Слишком много хаоса. Стихии вышли из-под контроля. Попробуй снова!', 'combat');
                 setTimeout(() => {
                     gameArea.style.display = 'none';
-                    UI.showParticleGame(onComplete);
+                    if (typeof onComplete === 'function') {
+                        onComplete();
+                    }
                 }, 2000);
             }
         }
 
-        spawnInterval = setInterval(createParticle, 600);
+        // Запуск игры
+        spawnInterval = setInterval(createParticle, 700);
         animate();
+        
+        console.log('✅ Мини-игра запущена');
     },
 
     hideParticleGame() {
