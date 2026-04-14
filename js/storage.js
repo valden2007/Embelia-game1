@@ -56,4 +56,4 @@ const Storage = {
         localStorage.removeItem(this.SAVE_KEY);
         location.reload(); // Перезагрузка страницы
     }
-};
+};   

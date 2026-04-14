@@ -122,4 +122,4 @@ const player = {
     }
 };
 
-window.player = player;
+window.player = player;    

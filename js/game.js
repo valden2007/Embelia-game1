@@ -636,4 +636,4 @@ const Game = {
         UI.updateStatus();
         UI.renderInventory();
     }
-};
+};    
