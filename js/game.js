@@ -106,7 +106,6 @@ const Game = {
 
     nextTurn() {
         this.turn++;
-        // ✅ ИСПРАВЛЕНО: Добавлен ледяной щит, пробитие и эффект яда
         const prompts = [
             "Ниниэль успела выставить ледяной щит, но хвост Василиска с оглушительным хрустом пробил его. Острые шипы впились в бок, а на хвосте мерцал яд. По телу разлилась слабость, сознание начало мутнеть...",
             "В памяти крик: «Беги, Нини!». Яд жжёт вены, ноги подкашиваются.",
@@ -170,8 +169,8 @@ const Game = {
                 UI.fadeScreen('out'); 
                 this.isFaded = true;
                 setTimeout(() => {
-                    // НЕ восстанавливаем здоровье полностью!
-                    window.player.mana = Math.min(window.player.maxMana, window.player.mana + 20);
+                    window.player.health = Math.floor(window.player.maxHealth * 0.55);
+                    window.player.mana = window.player.maxMana;
                     UI.updateStatus();
                     this.loadLocation("walden_hut");
                 }, 2000);
@@ -189,10 +188,7 @@ const Game = {
         
         window.player.currentLocation = id;
         UI.updateLocation(loc.name);
-        
-        // ✅ ИСПРАВЛЕНО: Убрано авто-дублирование описания в лог.
-        // Выводим только короткий атмосферный переход:
-        UI.log(`📍 Переход: ${loc.name}`, 'system');
+        UI.log(`📍 ${loc.name}`, 'system');
         
         if (this.isFaded) { 
             UI.fadeScreen('in'); 
@@ -235,13 +231,13 @@ const Game = {
         const buttons = [];
         
         if (!window.player.inventory.includes('lavender')) {
-            buttons.push({ label: '🌿 Искать лаванду', handler: () => this.collectHerb('lavender', 5, 0) });
+            buttons.push({ label: '🌿 Искать лаванду', handler: () => this.collectHerb('lavender') });
         }
         if (!window.player.inventory.includes('plantain')) {
-            buttons.push({ label: '🌱 Искать подорожник', handler: () => this.collectHerb('plantain', 3, 0) });
+            buttons.push({ label: '🌱 Искать подорожник', handler: () => this.collectHerb('plantain') });
         }
         if (!window.player.inventory.includes('sixflower')) {
-            buttons.push({ label: '🌸 Искать шестьцветник', handler: () => this.collectHerb('sixflower', 0, 5) });
+            buttons.push({ label: '🌸 Искать шестьцветник', handler: () => this.collectHerb('sixflower') });
         }
         
         if (collected >= 3) {
@@ -251,17 +247,17 @@ const Game = {
             });
         }
         
+        // ✅ КНОПКА КРАФТА
+        buttons.push({ label: '⚗️ Создать зелье', handler: () => this.showCraftingMenu() });
         buttons.push({ label: '🎒 Инвентарь', handler: () => UI.renderInventory() });
         
         UI.renderButtons(buttons);
     },
 
-    collectHerb(herbId, controlBonus, resonanceBonus) {
+    collectHerb(herbId) {
         if (window.player.addItem(herbId)) {
             const herb = gameData.items[herbId];
             UI.log(`🌿 Найдено: ${herb.name}`, 'item');
-            if (controlBonus) window.player.addControl(controlBonus);
-            if (resonanceBonus) window.player.addResonance(resonanceBonus);
             UI.updateStatus();
         }
         this.renderHerbQuestButtons();
@@ -283,6 +279,65 @@ const Game = {
             UI.updateStatus();
             this.runStoryNode('chapter2_intro');
         }, 2000);
+    },
+
+    // ✅ МЕНЮ КРАФТА
+    showCraftingMenu() {
+        UI.log('⚗️ === ЗЕЛЬЕВАРЕНИЕ ===', 'system');
+        
+        const buttons = [];
+        
+        for (let key in gameData.recipes) {
+            const recipe = gameData.recipes[key];
+            const hasIngredients = recipe.ingredients.every(ing => window.player.inventory.includes(ing));
+            const alreadyHas = window.player.inventory.includes(recipe.result);
+            
+            if (hasIngredients && !alreadyHas) {
+                buttons.push({
+                    label: `⚗️ ${recipe.name}`,
+                    handler: () => this.craftPotion(key)
+                });
+            } else if (alreadyHas) {
+                buttons.push({
+                    label: `✅ ${recipe.name} (уже есть)`,
+                    handler: () => {},
+                    disabled: true
+                });
+            } else {
+                buttons.push({
+                    label: `❌ ${recipe.name} (нет трав)`,
+                    handler: () => {
+                        UI.log(`Не хватает: ${recipe.ingredients.map(i => gameData.items[i].name).join(', ')}`, 'system');
+                    },
+                    disabled: true
+                });
+            }
+        }
+        
+        buttons.push({ label: '🔙 Назад', handler: () => this.renderHerbQuestButtons() });
+        UI.renderButtons(buttons);
+    },
+
+    craftPotion(recipeId) {
+        const recipe = gameData.recipes[recipeId];
+        
+        // Удаляем ингредиенты
+        recipe.ingredients.forEach(ing => {
+            const idx = window.player.inventory.indexOf(ing);
+            if (idx !== -1) {
+                window.player.inventory.splice(idx, 1);
+            }
+        });
+        
+        // Добавляем зелье
+        window.player.inventory.push(recipe.result);
+        
+        const potion = gameData.items[recipe.result];
+        UI.log(`⚗️ Создано: ${potion.name}!`, 'item');
+        UI.log(potion.description, 'system');
+        
+        UI.renderInventory();
+        this.showCraftingMenu();
     },
 
     startChapter2Battle() {
@@ -352,7 +407,8 @@ const Game = {
         const ending = gameData.mordredBattle.chapter2_end;
         const text = ending.text
             .replace('{resonance}', window.player.resonance)
-            .replace('{control}', window.player.control);
+            .replace('{control}', window.player.control)
+            .replace('{intoxication}', window.player.intoxication || 0);
         
         UI.log(text, 'system');
         
@@ -366,6 +422,7 @@ const Game = {
         ]);
     },
 
+    // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТОБРАЖЕНИЯ ДИАЛОГОВ (без имён)
     runStoryNode(nodeId) {
         const dialogueTree = gameData.chapter1Dialogues;
         if (!dialogueTree || !dialogueTree[nodeId]) {
@@ -375,6 +432,7 @@ const Game = {
         
         const node = dialogueTree[nodeId];
         
+        // Если node — массив (последовательность реплик)
         if (Array.isArray(node)) {
             let currentIndex = 0;
             
@@ -387,10 +445,13 @@ const Game = {
                 }
                 
                 const line = node[currentIndex];
-                const speaker = line.speaker || '';
                 const text = line.text || '';
                 
-                UI.log(`<b>${speaker === '???' ? 'Незнакомец' : speaker}:</b> ${text}`, 'dialogue');
+                // ✅ Только текст — без имён говорящих
+                if (text) {
+                    UI.log(text, 'dialogue');
+                }
+                
                 currentIndex++;
                 
                 UI.renderButtons([{ 
@@ -403,10 +464,13 @@ const Game = {
             return;
         }
         
-        const speaker = node.speaker || '';
+        // Если node — объект с текстом
         const text = node.text || '';
         
-        UI.log(`<b>${speaker === '???' ? 'Незнакомец' : speaker}:</b> ${text}`, 'dialogue');
+        // ✅ Только текст — без имён говорящих
+        if (text) {
+            UI.log(text, 'dialogue');
+        }
         
         if (node.effect) {
             if (node.effect.resonance) window.player.addResonance(node.effect.resonance);
@@ -421,9 +485,8 @@ const Game = {
             }
         }
 
-        // Обработка мгновенного лечения без спама
         if (node.action === "heal_player") {
-            this.healGradually(); // ✅ Запускаем плавное лечение
+            this.healGradually();
         }
         
         if (node.choices) {
@@ -461,33 +524,39 @@ const Game = {
                 label: '➡️ Далее', 
                 handler: () => this.runStoryNode(node.next) 
             }]);
-        } else if (node.next === 'training_minigame' || node.next === 'training_minigame_first') {
-            setTimeout(() => this.startTraining(), 1000);
         }
     },
 
     startTraining() {
         console.log('🎮 Запуск тренировки с частицами...');
-        UI.log('✨ <b>ПЕРВАЯ ТРЕНИРОВКА: ЛОВЛЯ ЧАСТИЦ СВЕТА</b>', 'system');
-        UI.log('— Теперь попробуй на практике! Лови частицы чистого Света, избегай Тьмы.', 'dialogue');
+        UI.log('✨ <b>ОБУЧЕНИЕ: МАГИЯ СВЕТА</b>', 'system');
+        UI.log('«Вспомни момент безопасности. Почувствуй частицы».', 'dialogue');
         
-        // Запускаем мини-игру
-        UI.showParticleGame(() => {
-            console.log('✅ Мини-игра завершена, продолжаем сюжет...');
-            this.onTrainingComplete();
-        });
+        // Проверяем, существует ли функция
+        if (typeof UI.showParticleGame === 'function') {
+            console.log('✅ Функция showParticleGame найдена');
+            UI.showParticleGame(() => {
+                console.log('✅ Мини-игра завершена, вызываем onTrainingComplete');
+                this.onTrainingComplete();
+            });
+        } else {
+            console.error('❌ Функция showParticleGame не найдена!');
+            UI.log('Ошибка загрузки мини-игры...', 'system');
+        }
     },
 
     onTrainingComplete() {
         window.player.mana = window.player.maxMana;
         window.player.addControl(15);
         UI.updateStatus();
-        UI.log('— Неплохо для начала, — кивнул Вальден. — Но светит, как фонарь у двери. А должно — как маяк для тех, кто заблудился во тьме.', 'dialogue');
-        UI.log('— Лучше, — кивнул Вальден. — Но это только начало. Теперь ты понимаешь, как работает свет.', 'dialogue');
-        this.runStoryNode('training_why_save_me');
+        UI.log('✨ Гармония достигнута! Ты научилась чувствовать стихии!', 'system');
+        UI.log('Посох вспыхнул. «Лучше. Но должно быть как маяк».', 'item');
+        
+        // ✅ Переходим к сцене с фиолетовой энергией Алатар
+        this.runStoryNode('purple_energy_vision');
     },
 
-    // ✅ ПЛАВНОЕ ЛЕЧЕНИЕ БЕЗ СПАМА
+    // ✅ ПЛАВНОЕ ЛЕЧЕНИЕ
     healGradually() {
         if (this.healInterval) clearInterval(this.healInterval);
         
@@ -498,16 +567,16 @@ const Game = {
         
         this.healInterval = setInterval(() => {
             if (currentHP < targetHP) {
-                currentHP += 2; // Скорость лечения
+                currentHP += 2;
                 if (currentHP > targetHP) currentHP = targetHP;
                 window.player.health = currentHP;
-                UI.updateStatus(); // Просто обновляем полоску, НЕ пишем в лог
+                UI.updateStatus();
             } else {
                 clearInterval(this.healInterval);
                 this.healInterval = null;
                 UI.log('✨ Здоровье полностью восстановлено.', 'item');
             }
-        }, 300); // Интервал обновления (чем меньше, тем плавнее)
+        }, 300);
     },
 
     renderActions(loc) {

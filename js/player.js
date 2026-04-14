@@ -9,6 +9,8 @@ const player = {
     strength: 8,
     resonance: 10,
     control: 50,
+    intoxication: 0,           // ✅ НОВАЯ МЕХАНИКА: Интоксикация от зелий
+    maxIntoxication: 100,
     inventory: ["burnt_drawing"],
     currentLocation: "canyon_ambush",
     isAlive: true,
@@ -40,23 +42,60 @@ const player = {
         return false;
     },
 
+    // ✅ ОБНОВЛЁННЫЙ МЕТОД ИСПОЛЬЗОВАНИЯ ПРЕДМЕТОВ
     useItem(id) {
         const idx = this.inventory.indexOf(id);
-        if (idx === -1) return "Предмет не найден.";
-        const item = gameData.items[id];
-        if (!item) return "Ошибка: предмет не найден.";
+        if (idx === -1) return "Предмет не найден в инвентаре.";
         
-        if (item.effect === "health_restore") {
-            this.heal(item.value);
+        const item = gameData.items[id];
+        if (!item) return "Ошибка: предмет не найден в базе данных.";
+        
+        // Если это зелье
+        if (item.type === "potion") {
+            // Применяем эффекты
+            if (item.effects) {
+                if (item.effects.health) this.heal(item.effects.health);
+                if (item.effects.mana) this.restoreMana(item.effects.mana);
+                if (item.effects.control) this.addControl(item.effects.control);
+                if (item.effects.resonance) this.addResonance(item.effects.resonance);
+            }
+            // ✅ Добавляем интоксикацию
+            if (item.intoxication) this.addIntoxication(item.intoxication);
+            
+            // Удаляем предмет после использования
             this.inventory.splice(idx, 1);
-            return `Вы использовали ${item.name}. Здоровье восстановлено.`;
+            return `💧 Вы выпили ${item.name}. ${item.description}`;
         }
-        if (item.effect === "mana_restore") {
-            this.restoreMana(item.value);
-            this.inventory.splice(idx, 1);
-            return `Вы использовали ${item.name}. Мана восстановлена.`;
+        
+        // Квестовые предметы и травы пока нельзя использовать напрямую
+        return `📜 ${item.name} — важный предмет. Его нельзя использовать напрямую.`;
+    },
+
+    // ✅ НОВАЯ МЕХАНИКА: Интоксикация
+    addIntoxication(amount) {
+        this.intoxication = Math.min(this.maxIntoxication, this.intoxication + amount);
+        
+        // Негативные эффекты при высокой интоксикации
+        if (this.intoxication >= 70 && this.intoxication < 90) {
+            this.control = Math.max(0, this.control - 3);
+            if (typeof UI !== 'undefined' && UI.log) {
+                UI.log('🍷 Голова тяжелеет... Контроль снижен (-3).', 'combat');
+            }
+        } else if (this.intoxication >= 90) {
+            this.control = Math.max(0, this.control - 5);
+            this.resonance = Math.min(100, this.resonance + 2); // Риск пробуждения силы
+            if (typeof UI !== 'undefined' && UI.log) {
+                UI.log('⚠️ ИНТОКСИКАЦИЯ КРИТИЧЕСКАЯ! Контроль падает, Резонанс нестабилен!', 'combat');
+            }
         }
-        return "Нельзя использовать.";
+        
+        // Постепенное снижение интоксикации со временем
+        setTimeout(() => {
+            if (this.intoxication > 0) {
+                this.intoxication = Math.max(0, this.intoxication - 1);
+                if (typeof UI !== 'undefined') UI.updateStatus();
+            }
+        }, 30000); // -1 каждые 30 секунд
     },
 
     addResonance(amount) {
@@ -74,7 +113,8 @@ const player = {
     },
 
     checkBadEnding() {
-        return this.resonance >= 90;
+        // Плохая концовка наступает при высоком резонансе ИЛИ критической интоксикации
+        return this.resonance >= 90 || this.intoxication >= 95;
     },
 
     getStatus() {
