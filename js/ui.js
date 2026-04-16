@@ -7,8 +7,7 @@ const UI = {
         locationName: null,
         healthBar: null,
         healthText: null,
-        manaBar: null,
-        manaText: null,
+        // ✅ УБРАНА МАНА
         levelText: null,
         resonanceText: null,
         controlText: null,
@@ -19,7 +18,9 @@ const UI = {
         modalTitle: null,
         modalMessage: null,
         modalClose: null,
-        gameContainer: null
+        gameContainer: null,
+        // ✅ НОВОЕ: для визуальных эффектов резонанса
+        resonanceEffect: null
     },
 
     // === ПОЛУЧЕНИЕ ИГРОКА ===
@@ -35,8 +36,7 @@ const UI = {
             locationName: document.getElementById('location-name'),
             healthBar: document.getElementById('health-bar'),
             healthText: document.getElementById('health-text'),
-            manaBar: document.getElementById('mana-bar'),
-            manaText: document.getElementById('mana-text'),
+            // ✅ УБРАНА МАНА
             levelText: document.getElementById('level-text'),
             resonanceText: document.getElementById('corruption-text'),
             controlText: document.getElementById('control-text'),
@@ -47,7 +47,9 @@ const UI = {
             modalTitle: document.getElementById('modal-title'),
             modalMessage: document.getElementById('modal-message'),
             modalClose: document.getElementById('modal-close'),
-            gameContainer: document.querySelector('.game-container')
+            gameContainer: document.querySelector('.game-container'),
+            // ✅ НОВОЕ: элемент для эффекта резонанса
+            resonanceEffect: document.getElementById('resonance-effect')
         };
 
         if (!this.elements.log || !this.elements.actionButtons) {
@@ -65,6 +67,12 @@ const UI = {
                     this.hideModal();
                 }
             });
+        }
+
+        // ✅ Инициализация эффекта резонанса
+        if (this.elements.resonanceEffect) {
+            this.elements.resonanceEffect.style.opacity = '0';
+            this.elements.resonanceEffect.style.transition = 'opacity 0.5s ease';
         }
 
         console.log('✅ UI модуль инициализирован');
@@ -107,25 +115,48 @@ const UI = {
             }
         }
 
-        if (this.elements.manaBar && this.elements.manaText) {
-            const mpPercent = Math.max(0, Math.min(100, (p.mana / p.maxMana) * 100));
-            this.elements.manaBar.style.width = `${mpPercent}%`;
-            this.elements.manaText.textContent = `${p.mana}/${p.maxMana}`;
-        }
+        // ✅ УБРАНО: обновление маны
 
         if (this.elements.levelText) {
             this.elements.levelText.textContent = p.level;
         }
 
+        // ✅ УЛУЧШЕНО: отображение резонанса с визуальными эффектами
         if (this.elements.resonanceText) {
             this.elements.resonanceText.textContent = `🌀 ${p.resonance}%`;
+            
             if (p.resonance >= 90) {
+                // 🔴 КРИТИЧЕСКИЙ РЕЗОНАНС: пульсация + красный цвет + эффект
                 this.elements.resonanceText.style.color = '#ff0000';
-                this.elements.resonanceText.title = "⚠️ КРИТИЧЕСКИЙ РЕЗОНАНС!";
+                this.elements.resonanceText.style.textShadow = '0 0 10px #ff0000, 0 0 20px #ff0000';
+                this.elements.resonanceText.style.animation = 'pulse 0.5s infinite';
+                this.elements.resonanceText.title = "⚠️ КРИТИЧЕСКИЙ РЕЗОНАНС! Потеря контроля!";
+                
+                // ✅ Показываем эффект резонанса
+                if (this.elements.resonanceEffect) {
+                    this.elements.resonanceEffect.style.opacity = '1';
+                    this.elements.resonanceEffect.style.background = 'radial-gradient(circle, rgba(255,0,0,0.3) 0%, transparent 70%)';
+                }
             } else if (p.resonance > 60) {
+                // 🟠 Высокий резонанс
                 this.elements.resonanceText.style.color = '#ffa500';
+                this.elements.resonanceText.style.textShadow = 'none';
+                this.elements.resonanceText.style.animation = 'none';
+                this.elements.resonanceText.title = "⚠️ Высокий резонанс";
+                
+                if (this.elements.resonanceEffect) {
+                    this.elements.resonanceEffect.style.opacity = '0.5';
+                }
             } else {
+                // 🟢 Нормальный резонанс
                 this.elements.resonanceText.style.color = '#00ff00';
+                this.elements.resonanceText.style.textShadow = 'none';
+                this.elements.resonanceText.style.animation = 'none';
+                this.elements.resonanceText.title = "✅ Резонанс в норме";
+                
+                if (this.elements.resonanceEffect) {
+                    this.elements.resonanceEffect.style.opacity = '0';
+                }
             }
         }
 
@@ -476,6 +507,18 @@ const UI = {
         this.log('════════════════════════════════', 'system');
         this.log(text, 'combat');
         this.log('════════════════════════════════', 'system');
+        
+        // ✅ Блокируем интерфейс
+        if (this.elements.actionButtons) {
+            this.elements.actionButtons.style.pointerEvents = 'none';
+            this.elements.actionButtons.style.opacity = '0.5';
+        }
+        
+        // ✅ Добавляем эффект затемнения
+        if (this.elements.gameContainer) {
+            this.elements.gameContainer.style.filter = 'blur(2px)';
+        }
+        
         this.renderButtons([{
             label: '🔄 Начать заново (Сбросить мир)',
             handler: () => location.reload()
@@ -485,4 +528,4 @@ const UI = {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = UI;
-}     
+}

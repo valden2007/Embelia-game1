@@ -6,6 +6,31 @@
     <title>Эмбедия: Истоки Алатар</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ✅ Анимация пульсации для критического резонанса */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* ✅ Эффект резонанса (фон) */
+        #resonance-effect {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            background: radial-gradient(circle, rgba(255,0,0,0.2) 0%, transparent 70%);
+        }
+        
+        /* ✅ Скрытие маны (на случай, если старый код остался) */
+        .mana-bar, #mana-bar, #mana-text {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
     <div class="game-container">
@@ -14,26 +39,39 @@
             <p class="subtitle">Текстовая приключенческая игра</p>
         </header>
 
+        <!-- ✅ СТАТУС-БАР (без маны) -->
         <section class="status-bar">
+            <!-- Здоровье -->
             <div class="status-item">
                 <span class="status-label">❤️ Здоровье</span>
-                <div class="status-bar-fill"><div id="health-bar" class="bar health"></div></div>
-                <span id="health-text" class="status-value">80/100</span>
+                <div class="status-bar-fill">
+                    <div id="health-bar" class="bar health"></div>
+                </div>
+                <span id="health-text" class="status-value">100/100</span>
             </div>
+            
+            <!-- ✅ УБРАНА МАНА -->
+            
+            <!-- Контроль -->
             <div class="status-item">
-                <span class="status-label">💧 Мана</span>
-                <div class="status-bar-fill"><div id="mana-bar" class="bar mana"></div></div>
-                <span id="mana-text" class="status-value">40/50</span>
+                <span class="status-label">⚡ Контроль</span>
+                <span id="control-text" class="status-value">50</span>
             </div>
+            
+            <!-- Резонанс -->
             <div class="status-item">
-    <span class="status-label">⚡ Контроль</span>
-    <span id="control-text" class="status-value">50</span>
-</div>
-<div class="status-item">
-    <span class="status-label">🌀 Резонанс</span>
-    <span id="corruption-text" class="status-value">0%</span>
-</div>
-<div id="intoxication-text" class="status-text">🍷 0%</div>
+                <span class="status-label">🌀 Резонанс</span>
+                <span id="corruption-text" class="status-value">10%</span>
+            </div>
+            
+            <!-- Интоксикация -->
+            <div class="status-item">
+                <span class="status-label">🍷 Интоксикация</span>
+                <span id="intoxication-text" class="status-value">0%</span>
+            </div>
+            
+            <!-- ✅ Элемент для эффекта резонанса -->
+            <div id="resonance-effect"></div>
         </section>
 
         <section class="location-info">
@@ -66,6 +104,7 @@
         </footer>
     </div>
 
+    <!-- Модальное окно -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
             <h3 id="modal-title">Сообщение</h3>
@@ -74,10 +113,11 @@
         </div>
     </div>
 
-        <script src="js/data.js"></script>
+    <!-- ✅ СКРИПТЫ В ПРАВИЛЬНОМ ПОРЯДКЕ -->
+    <script src="js/data.js"></script>
     <script src="js/player.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/game.js"></script>
     <script src="js/main.js"></script>
 </body>
-</html>  
+</html>

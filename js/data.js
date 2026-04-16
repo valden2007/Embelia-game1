@@ -16,7 +16,7 @@ const gameData = {
             description: "Уютное жилище на краю Серебряного Бора. Каждое окно завешено травами — полынью, лавандой, шалфеем. Воздух пахнет сушёными растениями, старыми книгами и чем-то ещё... чем-то древним. На стене висит меч с гравировкой: «Для старого сердца, закалённого в одном горне с моим».",
             magicLevel: "high",
             exits: { south: null, herb_garden: "Сад с травами" },
-            items: ["old_potion", "herb_bundle", "burnt_drawing"],
+            items: ["old_potion", "herb_bundle", "burnt_drawing", "light_arrow_scroll", "ice_shield_scroll"],
             npcs: ["walden"]
         },
         herb_garden: {
@@ -25,7 +25,7 @@ const gameData = {
             description: "Небольшой сад за хижиной, огороженный низким плетнём. Здесь растут полынь, лаванда, подорожник и редкий шестьцветник. Воздух пахнет влажной землёй. В дальнем углу стоит старый пень, у которого особенно густо растёт лаванда.",
             magicLevel: "high",
             exits: { north: "walden_hut" },
-            items: ["lavender", "plantain", "sixflower", "moonroot", "firemoss", "windleaf", "datura", "waterdrop"],
+            items: ["lavender", "plantain", "sixflower", "moonroot", "firemoss", "windleaf", "datura", "waterdrop", "comfrey", "willow_bark", "arnica", "mentha", "frostbloom", "thundercap"],
             npcs: []
         },
         silver_forest: {
@@ -62,9 +62,9 @@ const gameData = {
         herb_bundle: { 
             id: "herb_bundle", 
             name: "Пучок трав", 
-            description: "Восстанавливает 30 MP. Интоксикация: +5", 
+            description: "Восстанавливает 20 сил. Интоксикация: +5", 
             type: "potion",
-            effects: { mana: 30 },
+            effects: { control: 5 },
             intoxication: 5 
         },
         burnt_drawing: { 
@@ -76,7 +76,37 @@ const gameData = {
             value: 0 
         },
         
-        // === ТРАВЫ ДЛЯ КВЕСТА ===
+        // === НОВЫЕ ЗАКЛИНАНИЯ (свитки) ===
+        light_arrow_scroll: {
+            id: "light_arrow_scroll",
+            name: "Свиток: Огненная стрела",
+            description: "Наносит 25 урона врагу. Требует 15 контроля.",
+            type: "spell_scroll",
+            spell: { name: "Огненная стрела", damage: 25, cost: { control: 15 } }
+        },
+        ice_shield_scroll: {
+            id: "ice_shield_scroll",
+            name: "Свиток: Ледяной щит",
+            description: "Блокирует 10-20 урона на 1 ход. Требует 10 контроля.",
+            type: "spell_scroll",
+            spell: { name: "Ледяной щит", block: { min: 10, max: 20 }, duration: 1, cost: { control: 10 } }
+        },
+        wind_dash_scroll: {
+            id: "wind_dash_scroll",
+            name: "Свиток: Порыв ветра",
+            description: "50% шанс избежать урона полностью. Требует 12 контроля.",
+            type: "spell_scroll",
+            spell: { name: "Порыв ветра", dodgeChance: 0.5, cost: { control: 12 } }
+        },
+        combo_scroll: {
+            id: "combo_scroll",
+            name: "Свиток: Стихийный взрыв",
+            description: "Комбо: Огонь+Молния+Ветер. 40 урона, но -10 контроля. Требует 40 контроля.",
+            type: "spell_scroll",
+            spell: { name: "Стихийный взрыв", damage: 40, cost: { control: 40 }, sideEffect: { control: -10 } }
+        },
+        
+        // === ТРАВЫ ДЛЯ ПЕРВОГО КВЕСТА ===
         lavender: { 
             id: "lavender", 
             name: "Лаванда", 
@@ -102,7 +132,7 @@ const gameData = {
             value: 0 
         },
         
-        // === НОВЫЕ ТРАВЫ ДЛЯ КВЕСТА ===
+        // === ТРАВЫ ДЛЯ ВТОРОГО КВЕСТА ===
         moonroot: { 
             id: "moonroot", 
             name: "Лунный корень", 
@@ -144,7 +174,59 @@ const gameData = {
             value: 0 
         },
         
-        // === НОВЫЕ КРАФТОВЫЕ ЗЕЛЬЯ ===
+        // === ТРАВЫ ДЛЯ МАЗИ ВАЛЬДЕНА ===
+        comfrey: {
+            id: "comfrey",
+            name: "Окопник",
+            description: "Целебный корень. Снимает боль и воспаление.",
+            type: "herb",
+            effect: "ointment_ingredient",
+            value: 0
+        },
+        willow_bark: {
+            id: "willow_bark",
+            name: "Ивовая кора",
+            description: "Природное обезболивающее.",
+            type: "herb",
+            effect: "ointment_ingredient",
+            value: 0
+        },
+        arnica: {
+            id: "arnica",
+            name: "Арника",
+            description: "Снимает ушибы и растяжения.",
+            type: "herb",
+            effect: "ointment_ingredient",
+            value: 0
+        },
+        mentha: {
+            id: "mentha",
+            name: "Мята",
+            description: "Охлаждает и расслабляет мышцы.",
+            type: "herb",
+            effect: "ointment_ingredient",
+            value: 0
+        },
+        
+        // === НОВЫЕ ТРАВЫ ДЛЯ БОЕВЫХ ЗЕЛИЙ ===
+        frostbloom: {
+            id: "frostbloom",
+            name: "Морозный цветок",
+            description: "Ледяной лепесток. Основа для защитных зелий.",
+            type: "herb",
+            effect: "combat_ingredient",
+            value: 0
+        },
+        thundercap: {
+            id: "thundercap",
+            name: "Громовой гриб",
+            description: "Пульсирует электричеством. Усиливает атакующие зелья.",
+            type: "herb",
+            effect: "combat_ingredient",
+            value: 0
+        },
+        
+        // === КРАФТОВЫЕ ЗЕЛЬЯ ===
         health_potion: { 
             id: "health_potion", 
             name: "Зелье Здоровья", 
@@ -153,14 +235,6 @@ const gameData = {
             effects: { health: 40 },
             intoxication: 12 
         },
-        mana_potion: { 
-            id: "mana_potion", 
-            name: "Зелье Маны", 
-            description: "Восстанавливает 30 MP. Интоксикация: +8", 
-            type: "potion",
-            effects: { mana: 30 },
-            intoxication: 8 
-        },
         control_elixir: { 
             id: "control_elixir", 
             name: "Эликсир Контроля", 
@@ -168,6 +242,31 @@ const gameData = {
             type: "potion",
             effects: { control: 10 },
             intoxication: 20 
+        },
+        healing_ointment: {
+            id: "healing_ointment",
+            name: "Целебная мазь",
+            description: "Снимает боль в спине. +15 доверия Вальдену.",
+            type: "quest_item",
+            effects: { trust: 15 },
+            intoxication: 0
+        },
+        // === НОВЫЕ БОЕВЫЕ ЗЕЛЬЯ ===
+        frost_potion: {
+            id: "frost_potion",
+            name: "Зелье Мороза",
+            description: "Следующий полученный урон уменьшен на 15. Интоксикация: +8",
+            type: "potion",
+            effects: { temporaryBlock: 15 },
+            intoxication: 8
+        },
+        thunder_potion: {
+            id: "thunder_potion",
+            name: "Зелье Грома",
+            description: "Следующая атака наносит +10 урона. Интоксикация: +10",
+            type: "potion",
+            effects: { temporaryDamageBoost: 10 },
+            intoxication: 10
         }
     },
 
@@ -179,17 +278,87 @@ const gameData = {
             result: "health_potion",
             description: "Смешай Подорожник и Лаванду для регенерации."
         },
-        mana_potion: { 
-            name: "Зелье Маны", 
-            ingredients: ["sixflower", "lavender"], 
-            result: "mana_potion",
-            description: "Шестьцветник и Лаванда восстановят магический поток."
-        },
         control_elixir: { 
             name: "Эликсир Контроля", 
             ingredients: ["sixflower", "plantain", "lavender"], 
             result: "control_elixir",
             description: "Редкий состав для ментальной стабильности."
+        },
+        healing_ointment: {
+            name: "Целебная мазь",
+            ingredients: ["comfrey", "willow_bark", "arnica", "mentha"],
+            result: "healing_ointment",
+            description: "Смешай все травы для мази от боли в спине."
+        },
+        // === НОВЫЕ РЕЦЕПТЫ ДЛЯ БОЕВЫХ ЗЕЛИЙ ===
+        frost_potion: {
+            name: "Зелье Мороза",
+            ingredients: ["frostbloom", "waterdrop", "lavender"],
+            result: "frost_potion",
+            description: "Смешай Морозный цветок, Каплю росы и Лаванду для защиты."
+        },
+        thunder_potion: {
+            name: "Зелье Грома",
+            ingredients: ["thundercap", "firemoss", "plantain"],
+            result: "thunder_potion",
+            description: "Смешай Громовой гриб, Огненный мох и Подорожник для усиления атаки."
+        }
+    },
+
+    // === НОВАЯ СИСТЕМА БОЕВЫХ НАВЫКОВ ===
+    combatSkills: {
+        light_arrow: {
+            id: "light_arrow",
+            name: "Огненная стрела",
+            description: "Наносит 25 урона врагу",
+            cost: { control: 15 },
+            damage: 25,
+            type: "attack"
+        },
+        ice_shield: {
+            id: "ice_shield",
+            name: "Ледяной щит",
+            description: "Блокирует 10-20 урона на 1 ход",
+            cost: { control: 10 },
+            block: { min: 10, max: 20 },
+            duration: 1,
+            type: "defense"
+        },
+        wind_dash: {
+            id: "wind_dash",
+            name: "Порыв ветра",
+            description: "50% шанс избежать урона полностью",
+            cost: { control: 12 },
+            dodgeChance: 0.5,
+            type: "evasion"
+        },
+        combo_strike: {
+            id: "combo_strike",
+            name: "Стихийный взрыв",
+            description: "Комбо: Огонь+Молния+Ветер. 40 урона, но -10 контроля",
+            cost: { control: 40 },
+            damage: 40,
+            sideEffect: { control: -10 },
+            type: "ultimate"
+        },
+        // === ПРОСТРАНСТВЕННЫЕ АТАКИ (заготовки) ===
+        spatial_tear: {
+            id: "spatial_tear",
+            name: "Пространственный разрыв",
+            description: "Огромный урон, но +15% резонанса",
+            cost: { control: 20 },
+            damage: 60,
+            sideEffect: { resonance: 15 },
+            type: "spatial"
+        },
+        void_strike: {
+            id: "void_strike",
+            name: "Удар пустоты",
+            description: "Игнорирует защиту, +15% резонанса",
+            cost: { control: 25 },
+            damage: 70,
+            sideEffect: { resonance: 15 },
+            type: "spatial"
         }
     },
 
@@ -211,15 +380,24 @@ const gameData = {
             id: "mordred", 
             name: "Мордред Чёрный", 
             role: "boss", 
-            dialogues: ["Ты серьёзно думала, что такие фокусы сработают?"], 
+            dialogues: [
+                "Ты серьёзно думала, что такие фокусы сработают?",
+                "Твоя кровь — ключ, который я заберу!",
+                "Сила Алатар принадлежит мне!"
+            ], 
             hostile: true, 
             health: 200, 
             damage: 30,
-            isChapter2Boss: true
+            isChapter2Boss: true,
+            phases: [
+                { healthThreshold: 150, text: "Мордред активирует тёмные руны на доспехах. Его атаки становятся мощнее!", damageBoost: 1.2 },
+                { healthThreshold: 80, text: "Мордред призывает тени-клоны. Теперь он атакует дважды за ход!", multiAttack: true },
+                { healthThreshold: 30, text: "Мордред в отчаянии! Его последняя атака может всё решить...", desperationMode: true }
+            ]
         }
     },
     
-    // === ДИАЛОГИ ГЛАВЫ 1 (ИСПРАВЛЕННЫЕ) ===
+    // === ДИАЛОГИ ГЛАВЫ 1 ===
     chapter1Dialogues: {
         hut_wake: {
             text: "Запах полыни и крови вернул её к жизни. Ниниэль очнулась в хижине, где каждое окно было завешено травами. На стене висел меч с гравировкой: «Для старого сердца, закалённого в одном горне с моим».",
@@ -243,7 +421,7 @@ const gameData = {
                 { 
                     text: "❌ Отказаться (Остаться с 55 HP, но сохранить гордость)", 
                     next: "refuse_potion",
-                    effect: { control: 5 }
+                    effect: { control: 5, resonance: 10 }
                 }
             ]
         },
@@ -416,18 +594,102 @@ const gameData = {
         burn_both: {
             text: "Вальден поднес оба рисунка к огню.\n\n— Нет! — Ниниэль вскочила, но он отстранился.\n\n— Эти картины — как незаживающие раны, — его голос дрогнул. — Ты хранишь мёртвых, вместо того чтобы защищать живых.",
             speaker: "Вальден",
-            next: "blue_light"
+            choices: [
+                {
+                    text: "🔥 Разрешить сжечь (Отпустить прошлое)",
+                    next: "drawing_burned",
+                    effect: { control: 10, trust: 10, resonance: -5 }
+                },
+                {
+                    text: "✋ Запретить (Сохранить память)",
+                    next: "drawing_saved",
+                    effect: { resonance: 10, trust: -5, control: -5 }
+                }
+            ]
         },
-        blue_light: {
-            text: "Когда пламя коснулось детского рисунка, чернила вдруг вспыхнули синим светом. Ниниэль инстинктивно схватила пергамент — и на её ладони проступил тот же спиральный шрам, но теперь он мерцал тем же синим светом, как живой.\n\n— Интересно, — пробормотал Вальден, пряча руку под плащ, — твоя кровь помнит то, что даже ты не знала.",
-            speaker: "Вальден",
-            next: "parents_smile"
+        drawing_burned: {
+            text: "Ниниэль кивнула, сдерживая слёзы. Когда пламя коснулось рисунка, она почувствовала, как что-то внутри неё освобождается. Боль не исчезла, но стала легче.\n\n— Хорошо, — прошептал Вальден. — Теперь ты готова двигаться дальше.",
+            speaker: "",
+            next: "ointment_intro"
         },
-        parents_smile: {
-            text: "На мгновение Ниниэль увидела, как на её детском рисунке оживают улыбки родителей... затем они скривились в мучительных гримасах. Вальден резко потушил огонь, оставив лишь обугленный фрагмент — ту самую маленькую девочку между взрослыми.\n\n— Остальное... должно было сгореть, — сказал он, возвращая ей уцелевший клочок. — Но эту часть — ту, что была настоящей тобой, — можешь оставить.",
+        drawing_saved: {
+            text: "Ниниэль выхватила рисунок из огня, обжигая пальцы.\n\n— Нет! Это всё, что у меня осталось! — её голос дрогнул.\n\nВальден вздохнул: — Как знаешь. Но помни: цепляясь за прошлое, ты не сможешь защитить будущее.",
+            speaker: "",
+            next: "ointment_intro"
+        },
+        
+        // === КВЕСТ С МАЗЬЮ ДЛЯ ВАЛЬДЕНА ===
+        ointment_intro: {
+            text: "Утром Вальден с трудом поднялся, морщась от боли в спине.\n\n— Старость... — пробормотал он, потирая поясницу. — Ниниэль, сходи в сад. Принеси мне травы для мази: Окопник, Ивовую кору, Арнику и Мяту.",
             speaker: "Вальден",
+            next: "ointment_garden"
+        },
+        ointment_garden: {
+            text: "Ниниэль выходит в сад. Воздух пахнет полынью и влажной землёй.",
+            speaker: "",
+            choices: [
+                { text: "🌿 Искать Окопник", next: "find_comfrey", effect: { control: 2 } },
+                { text: "🌱 Искать Ивовую кору", next: "find_willow_bark", effect: { control: 2 } },
+                { text: "🌸 Искать Арнику", next: "find_arnica", effect: { control: 2 } },
+                { text: "🍃 Искать Мяту", next: "find_mentha", effect: { control: 2 } }
+            ]
+        },
+        find_comfrey: {
+            text: "Окопник растёт у старого пня. Его корни целебны.",
+            speaker: "",
+            effect: "comfrey_collected",
+            next: "ointment_gathered"
+        },
+        find_willow_bark: {
+            text: "Ивовая кора лежит у ручья. Природное обезболивающее.",
+            speaker: "",
+            effect: "willow_bark_collected",
+            next: "ointment_gathered"
+        },
+        find_arnica: {
+            text: "Арника светится слабым светом. Снимает ушибы.",
+            speaker: "",
+            effect: "arnica_collected",
+            next: "ointment_gathered"
+        },
+        find_mentha: {
+            text: "Мята растёт в тени. Охлаждает и расслабляет.",
+            speaker: "",
+            effect: "mentha_collected",
+            next: "ointment_gathered"
+        },
+        ointment_gathered: {
+            text: "Собрав травы, Ниниэль возвращается к Вальдену.",
+            speaker: "",
+            next: "ointment_choice"
+        },
+        ointment_choice: {
+            text: "Вальден сидит у костра, морщась от боли.\n\n— Спасибо, — говорит он. — Теперь... помажь мне спину этой мазью. Я сам не дотягиваюсь.",
+            speaker: "Вальден",
+            choices: [
+                {
+                    text: "🤝 Помочь Вальдену (Понизить резонанс, повысить доверие)",
+                    next: "help_walden",
+                    effect: { trust: 10, resonance: -5, control: 5 }
+                },
+                {
+                    text: "❌ Отказаться (Повысить резонанс, недоверие)",
+                    next: "refuse_help",
+                    effect: { trust: -10, resonance: 10, control: -5 }
+                }
+            ]
+        },
+        help_walden: {
+            text: "Ниниэль осторожно наносит мазь на спину Вальдена. Старик вздыхает с облегчением.\n\n— Спасибо, девочка... — его голос становится теплее. — Ты хорошая душа.",
+            speaker: "",
             next: "niniael_falls_asleep"
         },
+        refuse_help: {
+            text: "Ниниэль отступает.\n\n— Я... я не могу, — бормочет она.\n\nВальден смотрит на неё с грустью:\n— Как знаешь. Но помни: отказывая в помощи, ты отвергаешь и свет.",
+            speaker: "",
+            next: "niniael_falls_asleep"
+        },
+        
         niniael_falls_asleep: {
             text: "Наступила тишина, нарушаемая только треском дров. Ниниэль сжала в кулаке обгоревший фрагмент, чувствуя, как пепел въедается в кожу.\n\nОна долго смотрела на огонь, на обугленный клочок в руке, на лицо Вальдена, освещённое пламенем.\n\nГлаза её тяжелели. Каждое мгновение, проведённое у костра, казалось вечностью. Воспоминания о детском рисунке, о родителях, о побеге через зеркальный лабиринт — всё это сливалось в одну тяжёлую массу усталости, которая давила на веки.\n\nОна моргнула. Раз. Другой. Огонь перед глазами расплылся в тёплое пятно.\n\n— Вальден... — прошептала она, не в силах закончить фразу.\n\nЕго имя повисло в воздухе, как последний вздох перед погружением в сон. Рука с обугленным клочком безвольно опустилась на колени. Голова склонилась на грудь, и Ниниэль провалилась в тёмную бездну, где не было ни рисунков, ни проклятий, ни охоты.\n\nВальден поднял на неё взгляд. Увидел, как её дыхание стало ровным и глубоким. Он тихо встал, подошёл и осторожно укрыл её своим плащом.\n\n— Спи, — прошептал он, поправляя прядь волос, упавшую на её лицо. — Завтра будет новый день.\n\nОн вернулся к костру и долго смотрел на пламя, думая о том, что ждёт их впереди. А Ниниэль спала — впервые за долгое время без кошмаров, без криков, без страха.",
             speaker: "",
@@ -526,7 +788,7 @@ const gameData = {
         dragon_staff: {
             text: "Он вложил ей в руки посох, обёрнутый кожей дракона:\n\n— Закрой глаза. Вспомни момент, когда ты чувствовала себя в безопасности.",
             speaker: "Вальден",
-            next: "training_minigame"  // ← ЗАПУСКАЕТ МИНИ-ИГРУ СРАЗУ!
+            next: "training_minigame"
         },
         
         // === ПОСЛЕ МИНИ-ИГРЫ: НИНИЭЛЬ ЧУВСТВУЕТ СИЛУ АЛАТАР ===
@@ -669,7 +931,8 @@ const gameData = {
             text: "— Нам нужно сражаться, — спокойно сказал он, поднимая свой магический посох. — Я отвлеку их, а ты используй то, чему я тебя научил.\n\n«Соберись! Вспомни уроки» — пронеслось в голове.",
             speaker: "Вальден",
             choices: [
-                { text: "⚔️ «Я прикрою вас!» (Атака)", next: "battle_start", effect: { resonance: 10, control: -5 } },
+                // ✅ ИЗМЕНЕНО: +15 вместо +10
+                { text: "⚔️ «Я прикрою вас!» (Атака)", next: "battle_start", effect: { resonance: 15, control: -5 } },
                 { text: "🛡️ «Я буду защищать» (Защита)", next: "battle_start", effect: { resonance: -5, control: 10 } },
                 { text: "🧘 «Я попробую контролировать» (Контроль)", next: "battle_start", effect: { resonance: 0, control: 15 } }
             ]
@@ -682,65 +945,230 @@ const gameData = {
         }
     },
     
+    // === УЛУЧШЕННЫЙ БОЙ С МОРДРЕДОМ ===
     mordredBattle: {
         intro: "Мордред Чёрный, десятый из генералов призрачной армии, выходит вперёд. Его доспехи поглощают свет, а на груди — шрам в виде спирали, знак проклятого племени Алатар.",
-        choices: [
-            { text: "⚡ «Я уничтожу тебя!» (Полная сила)", condition: { minResonance: 50 }, effect: { resonance: 20, control: -15 }, next: "mordred_full_power" },
-            { text: "🛡️ «Вальден, пригнись!» (Защита)", effect: { resonance: -10, control: 10 }, next: "mordred_defend" },
-            { text: "🧘 «Свет — это не ярость...» (Контроль)", condition: { minControl: 60 }, effect: { resonance: -15, control: 20 }, next: "mordred_control" }
+        
+        // === ФАЗЫ БОЯ ===
+        phases: [
+            {
+                healthThreshold: 150,
+                text: "Мордред активирует тёмные руны на доспехах. Его атаки становятся мощнее!",
+                effect: { enemyDamageBoost: 1.2 }
+            },
+            {
+                healthThreshold: 80,
+                text: "Мордред призывает тени-клоны. Теперь он атакует дважды за ход!",
+                effect: { enemyMultiAttack: true }
+            },
+            {
+                healthThreshold: 30,
+                text: "Мордред в отчаянии! Его последняя атака может всё решить...",
+                effect: { enemyDesperation: true }
+            }
         ],
+        
+        // === ВЫБОРЫ ИГРОКА ===
+        choices: [
+            {
+                text: "⚡ «Я уничтожу тебя!» (Полная сила)",
+                condition: { minResonance: 50 },
+                effect: { resonance: 20, control: -15 },
+                next: "mordred_full_power",
+                description: "Высокий урон, но риск потери контроля"
+            },
+            {
+                text: "🛡️ «Вальден, пригнись!» (Защита)",
+                effect: { resonance: -10, control: 10 },
+                next: "mordred_defend",
+                description: "Защищает Вальдена, повышает контроль"
+            },
+            {
+                text: "🧘 «Свет — это не ярость...» (Контроль)",
+                condition: { minControl: 60 },
+                effect: { resonance: -15, control: 20 },
+                next: "mordred_control",
+                description: "Точная атака, высокий контроль"
+            },
+            {
+                text: "✨ Использовать Ледяной щит",
+                condition: { hasItem: "ice_shield_scroll" },
+                effect: { control: -10 },
+                next: "mordred_ice_shield",
+                description: "Блокирует 10-20 урона на ход"
+            },
+            {
+                text: "🔥 Использовать Огненную стрелу",
+                condition: { hasItem: "light_arrow_scroll" },
+                effect: { control: -15 },
+                next: "mordred_fire_arrow",
+                description: "Наносит 25 урона"
+            },
+            // === ПРОСТРАНСТВЕННЫЕ АТАКИ (+15% резонанса) ===
+            {
+                text: "🌀 Пространственный разрыв (Огромный урон, +15% резонанса)",
+                effect: { resonance: 15 },
+                next: "spatial_attack_1",
+                description: "Наносит 60 урона, но увеличивает резонанс",
+                damage: 60
+            },
+            {
+                text: "🕳️ Удар пустоты (Игнорирует защиту, +15% резонанса)",
+                effect: { resonance: 15 },
+                next: "spatial_attack_2",
+                description: "Игнорирует защиту врага, +15% резонанса",
+                damage: 70
+            }
+        ],
+        
+        // === РЕЗУЛЬТАТЫ ВЫБОРОВ ===
         mordred_full_power: {
             text: "Ниниэль закричала, и боль в запястье превратилась в огонь. Шрам вспыхнул чёрно-фиолетовым. Посох треснул. Луч был не похож на свет — это была волна чистого пространства.",
             checkBadEnding: true,
             badEndingText: "Взрыв тишины накрыл поляну. Когда пыль осела, Мордреда не было. Но не было и Вальдена. Только его посох, сломанный пополам. Ниниэль упала на колени. Шрам пульсировал, удовлетворённо гудя.\n\n🔚 КОНЕЦ ИГРЫ: «Сломанный Свет»\n*Вы позволили силе Алатар поглотить себя. Без Вальдена вы не сможете контролировать дар.*",
             goodText: "Мордред ранен, но Вальден истощён. Битва продолжается...",
-            next: "battle_continue"
+            next: "battle_continue",
+            damage: 40,
+            risk: "high"
         },
         mordred_defend: {
             text: "Щит вокруг учителя. Вальден безопасно завершает заклинание. Мордред отступает, но не сдаётся.",
             effect: { resonance: -10 },
-            next: "battle_continue"
+            next: "battle_continue",
+            damage: 0,
+            defense: true
         },
         mordred_control: {
             text: "Атака слабее, но точнее. Ниниэль направляет свет не на уничтожение, а на сдерживание. Мордред поражён — он не ожидал такого контроля.",
             effect: { resonance: -20, control: 10 },
-            next: "battle_continue"
+            next: "battle_continue",
+            damage: 20,
+            precision: true
         },
+        mordred_ice_shield: {
+            text: "Ледяной щит вспыхивает вокруг Ниниэль. Удар Мордреда рассеивается в ледяных осколках.",
+            effect: { control: -10 },
+            next: "battle_continue",
+            block: { min: 10, max: 20 }
+        },
+        mordred_fire_arrow: {
+            text: "Огненная стрела пронзает тьму. Мордред отшатывается, его доспехи дымятся.",
+            effect: { control: -15 },
+            next: "battle_continue",
+            damage: 25
+        },
+        // === ПРОСТРАНСТВЕННЫЕ АТАКИ ===
+        spatial_attack_1: {
+            text: "Пространство вокруг Мордреда искажается! Мощный удар наносит огромный урон, но шрам на запястье Ниниэль пульсирует сильнее...",
+            effect: { resonance: 15 },
+            next: "battle_continue",
+            damage: 60,
+            spatialAttack: true
+        },
+        spatial_attack_2: {
+            text: "Удар пустоты пронзает доспехи Мордреда! Он отшатывается, но Ниниэль чувствует, как сила Алатар внутри неё растёт...",
+            effect: { resonance: 15 },
+            next: "battle_continue",
+            damage: 70,
+            spatialAttack: true
+        },
+        
         battle_continue: {
             text: "Битва продолжается. Вальден и Ниниэль сражаются плечом к плечу. Призрачные всадники отступают, но Мордред не сдаётся.",
             next: "final_choice"
         },
+        
+        // === ФИНАЛЬНЫЙ ВЫБОР ===
         final_choice: {
             text: "Мордред готовится к последнему удару. Вальден ранен. Ниниэль должна решить: рискнуть силой или искать другой путь.",
             choices: [
-                { text: "⚡ Использовать всю силу (Риск плохой концовки)", effect: { resonance: 30 }, next: "final_power" },
-                { text: "🤝 Объединиться с Вальденом (Баланс)", effect: { control: 20 }, next: "final_balance" },
-                { text: "🕊️ Попытаться договориться (Мирный путь)", condition: { minControl: 70 }, effect: { resonance: -10, control: 10 }, next: "final_peace" }
+                {
+                    text: "⚡ Использовать всю силу (Риск плохой концовки)",
+                    effect: { resonance: 30 },
+                    next: "final_power",
+                    condition: { minResonance: 40 }
+                },
+                {
+                    text: "🤝 Объединиться с Вальденом (Баланс)",
+                    effect: { control: 20 },
+                    next: "final_balance",
+                    condition: { minControl: 50 }
+                },
+                {
+                    text: "🕊️ Попытаться договориться (Мирный путь)",
+                    condition: { minControl: 70, minTrust: 60 },
+                    effect: { resonance: -10, control: 10 },
+                    next: "final_peace"
+                },
+                {
+                    text: "✨ Стихийный взрыв (Комбо)",
+                    condition: { hasItem: "combo_scroll", minControl: 40 },
+                    effect: { control: -10 },
+                    next: "final_combo"
+                }
             ]
         },
+        
         final_power: {
             text: "Ниниэль выпускает всю силу. Пространство разрывается. Мордред исчезает в портале, но Вальден падает, истощённый. Ниниэль чувствует, как шрам пульсирует — сила Алатар пробуждается полностью.",
             checkBadEnding: true,
             badEndingText: "🔚 КОНЕЦ ИГРЫ: «Сломанный Свет»\n*Сила поглотила тебя. Ты стала оружием, но потеряла себя.*",
             goodText: "Глава 2 завершена. Но цена победы высока...",
-            next: "chapter2_end"
+            next: "chapter2_end",
+            ending: "power"
         },
         final_balance: {
             text: "Вальден и Ниниэль объединяют магию. Свет и опыт против тьмы. Мордред отступает в портал, но обещает вернуться. Вальден жив, но ранен. Ниниэль понимает: сила — это не только мощь, но и ответственность.",
             effect: { resonance: 5, control: 15 },
-            next: "chapter2_end"
+            next: "chapter2_end",
+            ending: "balance"
         },
         final_peace: {
             text: "Ниниэль не атакует. Она протягивает руку — не как враг, а как человек. Мордред замирает. В его глазах мелькает что-то человеческое. Он отступает, но не исчезает. «Мы ещё встретимся», — говорит он и уходит в портал.",
             effect: { resonance: -15, control: 25 },
-            next: "chapter2_end"
+            next: "chapter2_end",
+            ending: "peace"
         },
+        final_combo: {
+            text: "Огонь, молния и ветер сливаются в одном взрыве! Мордред отброшен, его доспехи разрушены. Но Ниниэль чувствует, как контроль ускользает...",
+            effect: { control: -10 },
+            next: "chapter2_end",
+            ending: "combo",
+            damage: 60
+        },
+        
+        // === КОНЦОВКИ ГЛАВЫ 2 ===
         chapter2_end: {
-            text: "🌅 Глава 2 завершена.\n\nСтатус:\n" + 
-                "🌀 Резонанс: {resonance}%\n" +
-                "⚡ Контроль: {control}%\n" +
-                "🍷 Интоксикация: {intoxication}%\n\n" +
-                "✅ Баланс сохранён. Ты на пути к истинной силе."
+            endings: {
+                power: {
+                    text: "🌑 Глава 2 завершена: Путь Силы.\n\nСтатус:\n" + 
+                        "🌀 Резонанс: {resonance}% ⬆️\n" +
+                        "⚡ Контроль: {control}% ⬇️\n" +
+                        "🍷 Интоксикация: {intoxication}%\n\n" +
+                        "⚠️ Сила растёт, но контроль слабее. Будь осторожна..."
+                },
+                balance: {
+                    text: "⚖️ Глава 2 завершена: Путь Баланса.\n\nСтатус:\n" + 
+                        "🌀 Резонанс: {resonance}%\n" +
+                        "⚡ Контроль: {control}% ⬆️\n" +
+                        "🍷 Интоксикация: {intoxication}%\n\n" +
+                        "✅ Идеальный баланс. Ты на верном пути."
+                },
+                peace: {
+                    text: "🕊️ Глава 2 завершена: Путь Мира.\n\nСтатус:\n" + 
+                        "🌀 Резонанс: {resonance}% ⬇️\n" +
+                        "⚡ Контроль: {control}% ⬆️\n" +
+                        "🍷 Интоксикация: {intoxication}%\n\n" +
+                        "🤝 Мудрость превыше силы. Ты выбираешь свой путь."
+                },
+                combo: {
+                    text: "💥 Глава 2 завершена: Путь Комбо.\n\nСтатус:\n" + 
+                        "🌀 Резонанс: {resonance}%\n" +
+                        "⚡ Контроль: {control}% ⬇️\n" +
+                        "🍷 Интоксикация: {intoxication}%\n\n" +
+                        "🔥 Мощный удар, но цена высока. Контроль требует практики."
+                }
+            }
         }
     }
-};    
+};

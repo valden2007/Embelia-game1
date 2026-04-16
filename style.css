@@ -23,6 +23,8 @@ body {
     padding: 25px;
     box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
     border: 2px solid #4a4a6a;
+    position: relative;
+    transition: filter 0.3s ease, opacity 0.3s ease;
 }
 
 /* ===== Заголовок ===== */
@@ -50,13 +52,14 @@ body {
 /* ===== Панель статуса ===== */
 .status-bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 15px;
     margin-bottom: 25px;
     background: rgba(30, 30, 50, 0.8);
     padding: 15px;
     border-radius: 10px;
     border: 1px solid #4a4a6a;
+    position: relative;
 }
 
 .status-item {
@@ -90,15 +93,42 @@ body {
     box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
 }
 
-.bar.mana {
-    background: linear-gradient(90deg, #3742fa, #5352ed);
-    box-shadow: 0 0 10px rgba(55, 66, 250, 0.5);
-}
+/* ✅ УБРАНО: стили для маны */
+/* .bar.mana { ... } */
 
 .status-value {
     font-weight: 600;
     color: #e0e0e0;
     font-size: 1rem;
+}
+
+/* ✅ НОВОЕ: Эффект резонанса */
+#resonance-effect {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    background: radial-gradient(circle, rgba(255,0,0,0.2) 0%, transparent 70%);
+}
+
+/* ✅ Анимация пульсации для критического резонанса */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Анимация вспышки экрана */
+@keyframes flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; background: rgba(255,255,255,0.8); }
+    100% { opacity: 1; }
+}
+
+.game-container.flash {
+    animation: flash 0.5s ease;
 }
 
 /* ===== Информация о локации ===== */
@@ -159,6 +189,13 @@ body {
     color: #74b9ff;
 }
 
+.log-entry.ending {
+    border-left-color: #ff0000;
+    color: #ff6b6b;
+    font-weight: bold;
+    background: rgba(255, 0, 0, 0.1);
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -203,6 +240,8 @@ body {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+    background: #1a1a2e;
+    border-color: #3a3a5a;
 }
 
 /* ===== Инвентарь ===== */
@@ -241,6 +280,10 @@ body {
     border-color: #9d4edd;
     background: rgba(60, 60, 80, 0.8);
     transform: scale(1.05);
+}
+
+.inventory-item:active {
+    transform: scale(0.98);
 }
 
 .empty-message {
@@ -283,6 +326,7 @@ body {
 .system-btn.danger:hover {
     background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
     border-color: #ff4757;
+    color: #fff;
 }
 
 /* ===== Footer ===== */
@@ -301,11 +345,17 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal:not(.hidden) {
+    opacity: 1;
 }
 
 .modal.hidden {
@@ -320,6 +370,12 @@ body {
     max-width: 400px;
     text-align: center;
     box-shadow: 0 0 30px rgba(157, 78, 221, 0.5);
+    animation: modalIn 0.3s ease;
+}
+
+@keyframes modalIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 .modal-content h3 {
@@ -332,6 +388,7 @@ body {
 .modal-content p {
     margin-bottom: 20px;
     color: #e0e0e0;
+    line-height: 1.5;
 }
 
 /* ===== Адаптивность для мобильных ===== */
@@ -382,6 +439,11 @@ body {
     .inventory-grid {
         grid-template-columns: 1fr 1fr;
     }
+    
+    .game-log {
+        height: 150px;
+        font-size: 0.95rem;
+    }
 }
 
 /* ===== Скроллбар ===== */
@@ -403,19 +465,18 @@ body {
     background: #6a6a8a;
 }
 
-/* ===== Анимации ===== */
-@keyframes flash {
-    0% { opacity: 1; }
-    50% { opacity: 0.3; background: #fff; }
-    100% { opacity: 1; }
-}
-
-.game-container.fade-out {
-    opacity: 0;
+/* ===== Эффекты для плохой концовки ===== */
+.game-container.ending-bad {
+    filter: blur(2px);
     pointer-events: none;
 }
 
-.game-container.fade-in {
-    opacity: 1;
+.game-container.ending-bad .actions-panel {
     pointer-events: all;
-}    
+    filter: none;
+}
+
+/* ===== Скрытие маны (резерв на случай старого кода) ===== */
+.mana-bar, #mana-bar, #mana-text, .bar.mana {
+    display: none !important;
+}

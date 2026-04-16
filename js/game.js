@@ -18,11 +18,15 @@ const Game = {
         }
         
         UI.init();
-        UI.updateStatus();
         UI.renderInventory();
         UI.log('🎮 Проклятие Алатар: Начало', 'system');
         
         UI.updateLocation("Серебряный Бор: Тропа");
+        
+        // ✅ НАЧАЛЬНЫЕ ХАРАКТЕРИСТИКИ (убрана мана)
+        window.player.health = 100;
+        window.player.maxHealth = 100;
+        UI.updateStatus();
         
         this.startForestWalk();
     },
@@ -46,7 +50,6 @@ const Game = {
     startForestWalk() {
         this.sequenceStep = 1;
         window.player.currentLocation = "forest_path";
-        UI.updateLocation("Серебряный Бор: Тропа");
         UI.log('🌲 Ниниэль идёт по Серебряному Бору. Кора деревьев отливает серебром. Тропы запутаны, она ищет путь в Тихоречье.', 'system');
         UI.log('Что делать?', 'system');
         UI.renderButtons([
@@ -73,6 +76,11 @@ const Game = {
         window.player.currentLocation = "ravine_bottom";
         UI.updateLocation("Дно Оврага");
         UI.log('💥 Обвал! Вы срываетесь вниз...', 'combat');
+        
+        // ✅ ИСПРАВЛЕНО: УСТАНАВЛИВАЕМ HP = 80 СРАЗУ ПРИ ПАДЕНИИ В ОВРАГ
+        window.player.health = 80;
+        UI.updateStatus();
+        
         UI.renderButtons([
             { label: '💪 Попытаться выбраться', handler: () => this.ravineChoice('climb') },
             { label: '🔍 Осмотреться', handler: () => this.ravineChoice('inspect') },
@@ -83,14 +91,26 @@ const Game = {
     ravineChoice(choice) {
         this.sequenceStep = 2.5;
         if (choice === 'climb') {
-            UI.log('Вы пытаетесь зацепиться, но камень крошится...', 'combat');
-            window.player.health = Math.max(0, window.player.health - 5);
+            UI.log('Вы пытаетесь зацепиться, но камень крошится под руками...', 'combat');
+            const fallDmg = 5;
+            window.player.health = Math.max(0, window.player.health - fallDmg);
+            UI.log(`💥 Камни падают на вас! -${fallDmg} HP`, 'combat');
         } else if (choice === 'inspect') {
             UI.log('Вы замечаете странные следы...', 'system');
         } else {
             UI.log('Вы перевязываете ссадины...', 'system');
+            const healAmount = 5;
+            window.player.health = Math.min(window.player.maxHealth, window.player.health + healAmount);
+            UI.log(`🩹 Вы перевязали раны. +${healAmount} HP`, 'system');
         }
         UI.updateStatus();
+        
+        // ✅ ПРОВЕРКА СМЕРТИ ПОСЛЕ ВЫБОРА В ОВРАГЕ
+        if (window.player.health <= 0) {
+            UI.showBadEnding('🔚 КОНЕЦ ИГРЫ: «Падение в бездну»\n*Ниниэль не смогла выбраться из оврага. Её тело осталось лежать на дне, забытое всеми...*');
+            return;
+        }
+        
         setTimeout(() => {
             UI.log('🐍 Из расщелины выползает Василиск!', 'combat');
             this.startBasiliskBattle();
@@ -100,50 +120,109 @@ const Game = {
     startBasiliskBattle() {
         this.inCombat = true; 
         this.turn = 0;
-        UI.log('⚔️ БОЙ! Цель: продержаться 3 хода.', 'combat');
-        this.nextTurn();
+        
+        // ✅ УБРАНО: больше не устанавливаем HP здесь, так как это сделано при падении
+        if (window.player.health > 80) {
+            window.player.health = 80;
+            UI.updateStatus();
+        }
+        
+        UI.log('⚔️ БОЙ С ВАСИЛИСКОМ!', 'combat');
+        UI.log('Цель: продержаться 2 хода до прибытия Вальдена.', 'system');
+        UI.log('⚠️ У вас мало шансов выжить, если будете только атаковать!', 'combat');
+        
+        // ✅ ПЕРВАЯ НЕБЛОКИРУЕМАЯ АТАКА ЧЕРЕЗ 1.5 СЕКУНДЫ
+        setTimeout(() => {
+            const firstHitDmg = 25 + Math.floor(Math.random() * 6);
+            window.player.health = Math.max(0, window.player.health - firstHitDmg);
+            UI.log(`💥 Хвост Василиска с хрустом пробивает ваш ледяной щит! Острые шипы вонзаются в бок. -${firstHitDmg} HP`, 'combat');
+            UI.updateStatus();
+            
+            if (window.player.health <= 0) {
+                UI.log('💀 Сознание уплывает...', 'combat');
+                UI.showBadEnding('🔚 КОНЕЦ ИГРЫ: «Смерть в овраге»\n*Василиск добил Ниниэль. Её история закончилась, не начавшись...*');
+                return;
+            }
+            
+            UI.log('⚠️ Василиск готовится к следующей атаке!', 'combat');
+            this.nextTurn();
+        }, 1500);
     },
 
     nextTurn() {
+        if (window.player.health <= 0) {
+            UI.showBadEnding('🔚 КОНЕЦ ИГРЫ: «Смерть в овраге»\n*Василиск добил Ниниэль. Её история закончилась, не начавшись...*');
+            return;
+        }
+        
+        if (this.turn >= 2) {
+            setTimeout(() => {
+                this.triggerWaldenRescue();
+            }, 1000);
+            return;
+        }
+
         this.turn++;
+        const baseDmg = 25 + Math.floor(Math.random() * 11);
+        
         const prompts = [
-            "Ниниэль успела выставить ледяной щит, но хвост Василиска с оглушительным хрустом пробил его. Острые шипы впились в бок, а на хвосте мерцал яд. По телу разлилась слабость, сознание начало мутнеть...",
-            "В памяти крик: «Беги, Нини!». Яд жжёт вены, ноги подкашиваются.",
-            "Силы на исходе. Тьма подступает к краям зрения."
+            "Василиск шипит и готовится к удару хвостом!",
+            "Глаза чудовища вспыхивают ядом. Оно атакует снова!"
         ];
         
-        UI.log(prompts[this.turn-1] || "Держись!", 'combat');
+        UI.log(prompts[this.turn-1] || "Василиск атакует!", 'combat');
+        
         UI.renderButtons([
             { label: '⚔️ Атаковать', handler: () => { 
                 UI.log('Удар бесполезен. Чешуя непробиваема.', 'combat'); 
-                this.enemyTurn(); 
+                this.basiliskAttack('attack', baseDmg);
             }},
             { label: '🛡️ Заблокировать', handler: () => { 
-                UI.log('Блок ослабил удар, но яд продолжает действовать.', 'system'); 
-                window.player.isDefending = true; 
-                this.enemyTurn(); 
+                UI.log('Вы выставляете щит, готовясь принять удар.', 'system'); 
+                this.basiliskAttack('defend', baseDmg);
             }},
             { label: '🏃 Уклониться', handler: () => { 
-                UI.log('Едва уворачиваешься. Голова кружится от яда.', 'combat'); 
-                this.enemyTurn(); 
+                UI.log('Вы пытаетесь уклониться...', 'combat'); 
+                this.basiliskAttack('dodge', baseDmg);
             }}
         ]);
     },
 
-    enemyTurn() {
-        const dmg = 20 + Math.floor(Math.random() * 10);
-        const died = window.player.takeDamage(dmg);
-        UI.log(`Василиск наносит ${dmg} урона!`, 'combat');
+    basiliskAttack(actionType, baseDmg) {
+        if (window.player.health <= 0) return;
+        
+        let finalDmg = 0;
+        let msg = '';
+
+        if (actionType === 'dodge') {
+            if (Math.random() > 0.5) {
+                finalDmg = 0;
+                msg = `🏃 Вы увернулись! Василиск промахнулся.`;
+            } else {
+                finalDmg = Math.floor(baseDmg / 2);
+                msg = `🏃 Не удалось увернуться полностью! Хвост задел вас. -${finalDmg} HP`;
+            }
+        } else if (actionType === 'defend') {
+            finalDmg = Math.floor(baseDmg / 2);
+            msg = `🛡️ Блок ослабил удар! Вы получаете ${finalDmg} урона вместо ${baseDmg}.`;
+        } else {
+            finalDmg = baseDmg;
+            msg = `⚔️ Атака не помогла! Хвост пробивает щит. -${finalDmg} HP`;
+        }
+
+        window.player.health = Math.max(0, window.player.health - finalDmg);
+        UI.log(msg, 'combat');
         UI.updateStatus();
-        if (died) {
+
+        if (window.player.health <= 0) {
             UI.log('💀 Сознание уплывает...', 'combat');
+            UI.showBadEnding('🔚 КОНЕЦ ИГРЫ: «Смерть в овраге»\n*Василиск добил Ниниэль. Её история закончилась, не начавшись...*');
             return;
         }
-        if (this.turn >= 3) {
-            this.triggerWaldenRescue();
-        } else {
+
+        setTimeout(() => {
             this.nextTurn();
-        }
+        }, 1500);
     },
 
     triggerWaldenRescue() {
@@ -151,8 +230,8 @@ const Game = {
         UI.log('══════════════════════════════', 'system');
         const lines = [
             "Внезапно сверху посыпались камни.",
-            "— Ох, чёрт! Опять эта проклятая трава!",
-            "Старик размахивает посохом.",
+            "— Ох, чёрт! Опять эта проклятая трава на утёсе!",
+            "Старик размахивает посохом,будто прогонял назойливую муху. ",
             "— Закопать? Поджарить? — Или...",
             "ХЛОП! Невидимая сила вдавила чудовище.",
             "— Ай, спина! Ну вот, опять...",
@@ -166,17 +245,56 @@ const Game = {
                 i++; 
                 setTimeout(step, 1800);
             } else {
-                UI.fadeScreen('out'); 
-                this.isFaded = true;
-                setTimeout(() => {
-                    window.player.health = Math.floor(window.player.maxHealth * 0.55);
-                    window.player.mana = window.player.maxMana;
-                    UI.updateStatus();
-                    this.loadLocation("walden_hut");
-                }, 2000);
+                UI.log('Старик подошёл ближе. Его глаза светились странным светом, а вокруг посоха мерцала аура силы. Ниниэль почувствовала, как сердце бьётся чаще...', 'dialogue');
+                UI.renderButtons([
+                    { 
+                        label: '😨 Отшатнуться (Испугаться его силы)', 
+                        handler: () => {
+                            window.player.addResonance(15);
+                            window.player.addTrust(-5);
+                            UI.updateStatus();
+                            this.waldenApproachFear();
+                        }
+                    },
+                    { 
+                        label: '👁️ Смотреть с надеждой (Принять помощь)', 
+                        handler: () => {
+                            window.player.addTrust(10);
+                            window.player.addControl(5);
+                            UI.updateStatus();
+                            this.waldenApproachHope();
+                        }
+                    }
+                ]);
             }
         };
         step();
+    },
+
+    waldenApproachFear() {
+        UI.log('Ниниэль отползла назад, сжимаясь от страха. Этот человек... он не был обычным стариком. В нём было что-то древнее и опасное.\n\n— Не бойся, девочка, — сказал Вальден, но в его голосе прозвучала лёгкая обида. — Я не причиню тебе вреда.', 'dialogue');
+        setTimeout(() => {
+            UI.fadeScreen('out'); 
+            this.isFaded = true;
+            setTimeout(() => {
+                window.player.health = Math.floor(window.player.maxHealth * 0.55);
+                UI.updateStatus();
+                this.loadLocation("walden_hut");
+            }, 2000);
+        }, 1500);
+    },
+
+    waldenApproachHope() {
+        UI.log('Ниниэль подняла взгляд на старика. В его глазах она увидела не угрозу, а... понимание. Как будто он тоже знал, что такое потерять всё.\n\n— Ты смелая, — сказал Вальден с одобрением. — Это хорошо. Тебе понадобится смелость.', 'dialogue');
+        setTimeout(() => {
+            UI.fadeScreen('out'); 
+            this.isFaded = true;
+            setTimeout(() => {
+                window.player.health = Math.floor(window.player.maxHealth * 0.55);
+                UI.updateStatus();
+                this.loadLocation("walden_hut");
+            }, 2000);
+        }, 1500);
     },
 
     loadLocation(id) {
@@ -211,7 +329,164 @@ const Game = {
             return;
         }
         
+        if (id === "silver_forest_deep") {
+            this.forestDeepEncounter();
+            return;
+        }
+        
+        if (id === "bear_lair") {
+            this.startBearBattle();
+            return;
+        }
+        
         this.renderActions(loc);
+    },
+
+    forestDeepEncounter() {
+        UI.log('🌲 Вы зашли глубоко в чащу. Воздух стал тяжёлым, деревья нависают, как стражи...', 'system');
+        UI.log('Внезапно из-за кустов раздался рык...', 'combat');
+        
+        UI.renderButtons([
+            { label: '🐻 Исследовать источник звука', handler: () => this.loadLocation('bear_lair') },
+            { label: '🏃 Осторожно отступить', handler: () => this.loadLocation('silver_forest') },
+            { label: '🔍 Осмотреться', handler: () => this.forestInspect() }
+        ]);
+    },
+
+    forestInspect() {
+        const roll = Math.random();
+        if (roll < 0.3) {
+            UI.log('🌿 Вы нашли редкую траву: Лунный корень!', 'item');
+            window.player.addItem('moonroot');
+        } else if (roll < 0.6) {
+            UI.log('👣 Вы заметили свежие следы. Лучше не рисковать...', 'system');
+        } else {
+            UI.log('🐺 Из кустов выскочила Теневая Гончая!', 'combat');
+            this.startShadowHoundBattle();
+            return;
+        }
+        setTimeout(() => this.loadLocation('silver_forest'), 1500);
+    },
+
+    startBearBattle() {
+        this.inCombat = true;
+        this.turn = 0;
+        UI.log('🐻 БОЙ! Земляной Медведь преграждает путь!', 'combat');
+        UI.log('Цель: продержаться 4 хода или нанести 60 урона.', 'system');
+        this.bearNextTurn();
+    },
+
+    bearNextTurn() {
+        this.turn++;
+        const bearPrompts = [
+            "Медведь ревёт, земля дрожит под его лапами. Он бросается вперёд!",
+            "Его когти оставляют глубокие борозды в камне. Удар был близок!",
+            "Медведь устал, но не сдаётся. Его глаза горят яростью.",
+            "Последний рывок! Медведь собирается для решающей атаки."
+        ];
+        
+        UI.log(bearPrompts[this.turn-1] || "Держись!", 'combat');
+        
+        UI.renderButtons([
+            { label: '🔥 Огненная стрела (20 урона)', handler: () => {
+                const dmg = 20 + Math.floor(Math.random() * 10);
+                UI.log(`🔥 Огненная стрела наносит ${dmg} урона!`, 'combat');
+                this.bearTakeDamage(dmg);
+            }},
+            { label: '💧 Водяной щит (защита)', handler: () => {
+                window.player.isDefending = true;
+                UI.log('💧 Водяной щит активирован!', 'system');
+                this.bearEnemyTurn();
+            }},
+            { label: '💨 Порыв ветра (уклонение)', handler: () => {
+                UI.log('💨 Вы уклонились от атаки!', 'system');
+                this.bearEnemyTurn();
+            }}
+        ]);
+        UI.updateStatus();
+    },
+
+    bearTakeDamage(dmg) {
+        const bearHP = 60;
+        if (dmg >= bearHP || this.turn >= 4) {
+            UI.log('🐻 Медведь отступает! Вы победили!', 'system');
+            UI.log('🎁 Награда: Шкура медведя (крафт), +10 Контроль', 'item');
+            window.player.addControl(10);
+            window.player.addItem('bear_hide');
+            this.inCombat = false;
+            setTimeout(() => this.loadLocation('silver_forest'), 2000);
+        } else {
+            this.bearEnemyTurn();
+        }
+    },
+
+    bearEnemyTurn() {
+        if (!this.inCombat) return;
+        const dmg = window.player.isDefending ? 10 : 25;
+        window.player.isDefending = false;
+        const died = window.player.takeDamage(dmg);
+        UI.log(`🐻 Медведь наносит ${dmg} урона!`, 'combat');
+        UI.updateStatus();
+        if (died) {
+            UI.log('💀 Вы пали в бою с медведем...', 'combat');
+            UI.showBadEnding('🔚 КОНЕЦ ИГРЫ: «Жертва леса»\n*Земляной Медведь стал вашей последней битвой. Без вас Орден Света ослабнет...*');
+            return;
+        }
+        if (this.turn < 4) {
+            this.bearNextTurn();
+        } else {
+            UI.log('🐻 Медведь, израненный, отступает в чащу.', 'system');
+            this.inCombat = false;
+            setTimeout(() => this.loadLocation('silver_forest'), 2000);
+        }
+    },
+
+    startShadowHoundBattle() {
+        this.inCombat = true;
+        this.turn = 0;
+        UI.log('🐺 БОЙ! Теневая Гончая атакует!', 'combat');
+        this.houndNextTurn();
+    },
+
+    houndNextTurn() {
+        this.turn++;
+        UI.log('Гончая кружит, её глаза горят тусклым светом...', 'combat');
+        
+        UI.renderButtons([
+            { label: '⚡ Быстрая атака (15 урона)', handler: () => {
+                UI.log('⚡ Вы наносите 15 урона!', 'combat');
+                this.houndDefeated();
+            }},
+            { label: '🛡️ Блок', handler: () => {
+                window.player.isDefending = true;
+                this.houndEnemyTurn();
+            }}
+        ]);
+        UI.updateStatus();
+    },
+
+    houndEnemyTurn() {
+        if (!this.inCombat) return;
+        const dmg = window.player.isDefending ? 5 : 15;
+        window.player.isDefending = false;
+        const died = window.player.takeDamage(dmg);
+        UI.log(`🐺 Гончая наносит ${dmg} урона!`, 'combat');
+        UI.updateStatus();
+        if (died) {
+            UI.showBadEnding('🔚 КОНЕЦ ИГРЫ: «Укус тени»\n*Теневая Гончая оказалась быстрее...');
+            return;
+        }
+        if (this.turn < 3) {
+            this.houndNextTurn();
+        } else {
+            this.houndDefeated();
+        }
+    },
+
+    houndDefeated() {
+        UI.log('🐺 Гончая с визгом убегает в тень.', 'system');
+        this.inCombat = false;
+        setTimeout(() => this.loadLocation('silver_forest'), 1500);
     },
 
     startHerbQuest() {
@@ -247,7 +522,6 @@ const Game = {
             });
         }
         
-        // ✅ КНОПКА КРАФТА
         buttons.push({ label: '⚗️ Создать зелье', handler: () => this.showCraftingMenu() });
         buttons.push({ label: '🎒 Инвентарь', handler: () => UI.renderInventory() });
         
@@ -272,16 +546,13 @@ const Game = {
             window.player.addControl(20);
             window.player.level = 2;
             window.player.maxHealth += 20;
-            window.player.maxMana += 10;
             window.player.health = window.player.maxHealth;
-            window.player.mana = window.player.maxMana;
             UI.log('✨ Ниниэль стала сильнее!', 'system');
             UI.updateStatus();
             this.runStoryNode('chapter2_intro');
         }, 2000);
     },
 
-    // ✅ МЕНЮ КРАФТА
     showCraftingMenu() {
         UI.log('⚗️ === ЗЕЛЬЕВАРЕНИЕ ===', 'system');
         
@@ -320,22 +591,16 @@ const Game = {
 
     craftPotion(recipeId) {
         const recipe = gameData.recipes[recipeId];
-        
-        // Удаляем ингредиенты
         recipe.ingredients.forEach(ing => {
             const idx = window.player.inventory.indexOf(ing);
             if (idx !== -1) {
                 window.player.inventory.splice(idx, 1);
             }
         });
-        
-        // Добавляем зелье
         window.player.inventory.push(recipe.result);
-        
         const potion = gameData.items[recipe.result];
         UI.log(`⚗️ Создано: ${potion.name}!`, 'item');
         UI.log(potion.description, 'system');
-        
         UI.renderInventory();
         this.showCraftingMenu();
     },
@@ -349,80 +614,138 @@ const Game = {
 
     runMordredBattle() {
         const battle = gameData.mordredBattle;
-        
-        if (battle.checkBadEnding && window.player.checkBadEnding()) {
-            UI.showBadEnding(battle.badEndingText);
-            return;
+
+        // Проверка плохой концовки
+        if (window.player.checkBadEnding && window.player.checkBadEnding()) {
+             this.showChapter2BadEnding();
+             return;
         }
-        
-        if (battle.intro) {
-            UI.log(battle.intro, 'combat');
+
+        // Показываем вступление только один раз
+        if (!this.mordredIntroShown) {
+            if (battle.intro) {
+                UI.log(battle.intro, 'combat');
+            }
+            this.mordredIntroShown = true;
         }
-        
-        if (battle.choices) {
-            const buttons = battle.choices.map(choice => {
-                if (choice.condition) {
-                    if (choice.condition.minResonance && window.player.resonance < choice.condition.minResonance) {
-                        return { label: choice.text + ' ❌ (нужен резонанс)', handler: () => {}, disabled: true };
+
+        // Показываем корневые выборы
+        this.renderBattleChoices(battle.choices, battle);
+    },
+
+    // ✅ Новая функция для рендера выборов в любой фазе боя
+    renderBattleChoices(choices, battle) {
+        const buttons = choices.map(choice => {
+            if (choice.condition) {
+                if (choice.condition.minResonance && window.player.resonance < choice.condition.minResonance) {
+                    return { label: choice.text + ' ❌ (нужен резонанс)', handler: () => {}, disabled: true };
+                }
+                if (choice.condition.minControl && window.player.control < choice.condition.minControl) {
+                    return { label: choice.text + ' ❌ (нужен контроль)', handler: () => {}, disabled: true };
+                }
+            }
+            
+            return {
+                label: choice.text,
+                handler: () => {
+                    // Применяем эффекты
+                    if (choice.effect) {
+                        if (choice.effect.resonance) window.player.addResonance(choice.effect.resonance);
+                        if (choice.effect.control) window.player.addControl(choice.effect.control);
+                        UI.updateStatus();
                     }
-                    if (choice.condition.minControl && window.player.control < choice.condition.minControl) {
-                        return { label: choice.text + ' ❌ (нужен контроль)', handler: () => {}, disabled: true };
+                    
+                    // ✅ ПРОВЕРКА РЕЗОНАНСА ПОСЛЕ ВЫБОРА
+                    if (window.player.resonance >= 90) {
+                        this.showChapter2BadEnding();
+                        return;
+                    }
+
+                    // Переходим к следующей фазе
+                    if (choice.next) {
+                        this.renderMordredPhase(choice.next, battle);
                     }
                 }
-                
-                return {
-                    label: choice.text,
-                    handler: () => {
-                        if (choice.effect) {
-                            if (choice.effect.resonance) window.player.addResonance(choice.effect.resonance);
-                            if (choice.effect.control) window.player.addControl(choice.effect.control);
-                            UI.updateStatus();
-                        }
-                        
-                        if (choice.checkBadEnding && window.player.checkBadEnding()) {
-                            UI.showBadEnding(battle.badEndingText);
-                            return;
-                        }
-                        
-                        if (choice.next) {
-                            const nextScene = battle[choice.next];
-                            if (nextScene) {
-                                UI.log(nextScene.text || nextScene.goodText, 'system');
-                                if (nextScene.next) {
-                                    setTimeout(() => this.runMordredBattle(), 2000);
-                                } else {
-                                    this.endChapter2();
-                                }
-                            }
-                        }
-                    }
-                };
-            });
-            
-            UI.renderButtons(buttons);
+            };
+        });
+        
+        UI.renderButtons(buttons);
+    },
+
+    // ✅ Новая функция для обработки фаз боя (узлов в data.js)
+    renderMordredPhase(phaseKey, battle) {
+        const node = battle[phaseKey];
+        if (!node) {
+            console.error("Фаза боя не найдена:", phaseKey);
+            return;
         }
+
+        // Логируем текст фазы
+        if (node.text) {
+            UI.log(node.text, 'system');
+        }
+
+        // Если есть концовки (например, chapter2_end)
+        if (node.endings) {
+            let endingKey = 'balance'; // По умолчанию
+            if (window.player.resonance > 60) endingKey = 'power';
+            else if (window.player.control > 70) endingKey = 'peace';
+            
+            const ending = node.endings[endingKey] || node.endings['balance'];
+            if (ending) {
+                UI.log(ending.text, 'system');
+            }
+            
+            // Кнопка продолжения
+            UI.renderButtons([
+                { label: '🌲 Продолжить в Серебряный Бор', handler: () => this.loadLocation("silver_forest") }
+            ]);
+            return;
+        }
+
+        // Если есть выборы в этой фазе
+        if (node.choices && node.choices.length > 0) {
+            setTimeout(() => {
+                this.renderBattleChoices(node.choices, battle);
+            }, 1000);
+        } 
+        // Если нет выборов, но есть переход к следующей фазе
+        else if (node.next) {
+            setTimeout(() => {
+                this.renderMordredPhase(node.next, battle);
+            }, 2000);
+        }
+    },
+
+    // ✅ Функция для плохой концовки (потеря контроля)
+    showChapter2BadEnding() {
+        UI.log('══════════════════════════════', 'system');
+        UI.log('🌀 СИЛА АЛАТАР ВЫРЫВАЕТСЯ НАРУЖУ!', 'combat');
+        UI.log('Ниниэль чувствует, как пространство рвётся вокруг неё. Её глаза горят спиральным светом.', 'dialogue');
+        UI.log('Вальден, создающий шар стихий, видит это — и понимает: он не успеет отменить заклинание.', 'system');
+        
+        setTimeout(() => {
+            UI.log('💥 ВЗРЫВ!', 'combat');
+            UI.flashScreen();
+            UI.log('Свет Ниниэль встречается с шаром Вальдена. Пространство схлопывается.', 'combat');
+            UI.log('Когда дым рассеивается... на месте хижины — огромный кратер.', 'system');
+            UI.log('Ниниэль лежит на краю. Вальдена нет. Мордреда нет. Только пепел и тишина.', 'dialogue');
+            UI.log('Она одна. Сила Алатар внутри неё пульсирует, но не отвечает.', 'system');
+            UI.log('🔚 КОНЕЦ ИГРЫ: «Одиночество в кратере»\n*Ты потеряла контроль. Сила поглотила всё. Теперь ты — одна в разрушенном мире. История закончилась.*', 'ending');
+            
+            UI.renderButtons([
+                { label: '🔄 Начать заново', handler: () => location.reload() }
+            ]);
+        }, 2000);
     },
 
     endChapter2() {
+        // Эта функция больше не нужна, так как логика перенесена в renderMordredPhase
+        // Но оставим для совместимости, если где-то вызывается
         const ending = gameData.mordredBattle.chapter2_end;
-        const text = ending.text
-            .replace('{resonance}', window.player.resonance)
-            .replace('{control}', window.player.control)
-            .replace('{intoxication}', window.player.intoxication || 0);
-        
-        UI.log(text, 'system');
-        
-        if (gameData.locations.walden_hut) {
-            gameData.locations.walden_hut.exits.south = "silver_forest";
-        }
-        
-        UI.renderButtons([
-            { label: '🌲 Продолжить в Серебряный Бор', handler: () => this.loadLocation("silver_forest") },
-            { label: '🎒 Инвентарь', handler: () => UI.renderInventory() }
-        ]);
+        // ...
     },
 
-    // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТОБРАЖЕНИЯ ДИАЛОГОВ (без имён)
     runStoryNode(nodeId) {
         const dialogueTree = gameData.chapter1Dialogues;
         if (!dialogueTree || !dialogueTree[nodeId]) {
@@ -432,10 +755,8 @@ const Game = {
         
         const node = dialogueTree[nodeId];
         
-        // Если node — массив (последовательность реплик)
         if (Array.isArray(node)) {
             let currentIndex = 0;
-            
             const showNextLine = () => {
                 if (currentIndex >= node.length) {
                     if (node[node.length - 1].next) {
@@ -443,31 +764,19 @@ const Game = {
                     }
                     return;
                 }
-                
                 const line = node[currentIndex];
                 const text = line.text || '';
-                
-                // ✅ Только текст — без имён говорящих
                 if (text) {
                     UI.log(text, 'dialogue');
                 }
-                
                 currentIndex++;
-                
-                UI.renderButtons([{ 
-                    label: '🗣️ Далее', 
-                    handler: () => showNextLine() 
-                }]);
+                UI.renderButtons([{ label: '🗣️ Далее', handler: () => showNextLine() }]);
             };
-            
             showNextLine();
             return;
         }
         
-        // Если node — объект с текстом
         const text = node.text || '';
-        
-        // ✅ Только текст — без имён говорящих
         if (text) {
             UI.log(text, 'dialogue');
         }
@@ -475,6 +784,8 @@ const Game = {
         if (node.effect) {
             if (node.effect.resonance) window.player.addResonance(node.effect.resonance);
             if (node.effect.control) window.player.addControl(node.effect.control);
+            if (node.effect.trust) window.player.addTrust(node.effect.trust);
+            if (node.effect.health_restore) window.player.heal(50);
             UI.updateStatus();
         }
         
@@ -496,6 +807,7 @@ const Game = {
                     if (choice.effect) {
                         if (choice.effect.resonance) window.player.addResonance(choice.effect.resonance);
                         if (choice.effect.control) window.player.addControl(choice.effect.control);
+                        if (choice.effect.trust) window.player.addTrust(choice.effect.trust);
                         UI.updateStatus();
                     }
                     this.runStoryNode(choice.next);
@@ -519,12 +831,70 @@ const Game = {
                 setTimeout(() => this.startTraining(), 1000);
                 return;
             }
+            if (node.next === 'ointment_intro') {
+                this.startOintmentQuest();
+                return;
+            }
             
-            UI.renderButtons([{ 
-                label: '➡️ Далее', 
-                handler: () => this.runStoryNode(node.next) 
-            }]);
+            UI.renderButtons([{ label: '➡️ Далее', handler: () => this.runStoryNode(node.next) }]);
         }
+    },
+
+    startOintmentQuest() {
+        UI.log('🧴 КВЕСТ: Целебная мазь для Вальдена', 'system');
+        UI.log('Соберите 4 травы: Окопник, Ивовую кору, Арнику и Мяту', 'system');
+        this.ointmentCollected = {
+            comfrey: false,
+            willow_bark: false,
+            arnica: false,
+            mentha: false
+        };
+        this.renderOintmentQuestButtons();
+    },
+
+    renderOintmentQuestButtons() {
+        const buttons = [];
+        
+        if (!this.ointmentCollected.comfrey) {
+            buttons.push({ label: '🌿 Искать Окопник', handler: () => this.collectOintmentHerb('comfrey') });
+        }
+        if (!this.ointmentCollected.willow_bark) {
+            buttons.push({ label: '🌱 Искать Ивовую кору', handler: () => this.collectOintmentHerb('willow_bark') });
+        }
+        if (!this.ointmentCollected.arnica) {
+            buttons.push({ label: '🌸 Искать Арнику', handler: () => this.collectOintmentHerb('arnica') });
+        }
+        if (!this.ointmentCollected.mentha) {
+            buttons.push({ label: '🍃 Искать Мяту', handler: () => this.collectOintmentHerb('mentha') });
+        }
+        
+        const allCollected = Object.values(this.ointmentCollected).every(v => v === true);
+        if (allCollected) {
+            buttons.push({ 
+                label: '✅ Вернуться к Вальдену', 
+                handler: () => this.completeOintmentQuest() 
+            });
+        }
+        
+        buttons.push({ label: '🎒 Инвентарь', handler: () => UI.renderInventory() });
+        UI.renderButtons(buttons);
+    },
+
+    collectOintmentHerb(herbId) {
+        if (window.player.addItem(herbId)) {
+            const herb = gameData.items[herbId];
+            UI.log(`🌿 Найдено: ${herb.name}`, 'item');
+            this.ointmentCollected[herbId] = true;
+            UI.updateStatus();
+        }
+        this.renderOintmentQuestButtons();
+    },
+
+    completeOintmentQuest() {
+        UI.log('🧴 Все травы собраны! Ниниэль возвращается к Вальдену.', 'system');
+        setTimeout(() => {
+            this.runStoryNode('ointment_choice');
+        }, 1500);
     },
 
     startTraining() {
@@ -532,7 +902,6 @@ const Game = {
         UI.log('✨ <b>ОБУЧЕНИЕ: МАГИЯ СВЕТА</b>', 'system');
         UI.log('«Вспомни момент безопасности. Почувствуй частицы».', 'dialogue');
         
-        // Проверяем, существует ли функция
         if (typeof UI.showParticleGame === 'function') {
             console.log('✅ Функция showParticleGame найдена');
             UI.showParticleGame(() => {
@@ -546,25 +915,18 @@ const Game = {
     },
 
     onTrainingComplete() {
-        window.player.mana = window.player.maxMana;
         window.player.addControl(15);
         UI.updateStatus();
         UI.log('✨ Гармония достигнута! Ты научилась чувствовать стихии!', 'system');
         UI.log('Посох вспыхнул. «Лучше. Но должно быть как маяк».', 'item');
-        
-        // ✅ Переходим к сцене с фиолетовой энергией Алатар
         this.runStoryNode('purple_energy_vision');
     },
 
-    // ✅ ПЛАВНОЕ ЛЕЧЕНИЕ
     healGradually() {
         if (this.healInterval) clearInterval(this.healInterval);
-        
         UI.log('🍵 Зелье действует... Силы постепенно возвращаются.', 'item');
-        
         let currentHP = window.player.health;
         const targetHP = window.player.maxHealth;
-        
         this.healInterval = setInterval(() => {
             if (currentHP < targetHP) {
                 currentHP += 2;
@@ -581,52 +943,35 @@ const Game = {
 
     renderActions(loc) {
         const acts = [];
-        
         for (let [dir, target] of Object.entries(loc.exits || {})) {
             if (target && typeof target === 'string') {
-                acts.push({ 
-                    label: `⬇️ ${target}`, 
-                    handler: () => this.loadLocation(target) 
-                });
+                acts.push({ label: `⬇️ ${target}`, handler: () => this.loadLocation(target) });
             }
         }
-        
         if (loc.npcs) {
             loc.npcs.forEach(npcId => {
                 const npc = gameData.npcs[npcId];
                 if (npc && !npc.hostile) {
-                    acts.push({ 
-                        label: `💬 Говорить: ${npc.name}`, 
-                        handler: () => {
-                            const dialog = npc.dialogues[Math.floor(Math.random() * npc.dialogues.length)];
-                            UI.log(`${npc.name}: "${dialog}"`, 'dialogue');
-                        }
-                    });
+                    acts.push({ label: `💬 Говорить: ${npc.name}`, handler: () => {
+                        const dialog = npc.dialogues[Math.floor(Math.random() * npc.dialogues.length)];
+                        UI.log(`${npc.name}: "${dialog}"`, 'dialogue');
+                    }});
                 }
             });
         }
-        
         if (loc.items?.length) {
-            acts.push({ 
-                label: '🎒 Подобрать', 
-                handler: () => {
-                    loc.items.forEach(i => {
-                        if (window.player.addItem(i)) {
-                            UI.log(`Подобрано: ${gameData.items[i].name}`, 'item');
-                        }
-                    });
-                    loc.items = []; 
-                    UI.renderInventory(); 
-                    this.renderActions(loc);
-                }
-            });
+            acts.push({ label: '🎒 Подобрать', handler: () => {
+                loc.items.forEach(i => {
+                    if (window.player.addItem(i)) {
+                        UI.log(`Подобрано: ${gameData.items[i].name}`, 'item');
+                    }
+                });
+                loc.items = []; 
+                UI.renderInventory(); 
+                this.renderActions(loc);
+            }});
         }
-        
-        acts.push({ 
-            label: '🎒 Инвентарь', 
-            handler: () => UI.renderInventory() 
-        });
-        
+        acts.push({ label: '🎒 Инвентарь', handler: () => UI.renderInventory() });
         UI.renderButtons(acts);
     },
 
@@ -636,4 +981,4 @@ const Game = {
         UI.updateStatus();
         UI.renderInventory();
     }
-};    
+};

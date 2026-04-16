@@ -7,4 +7,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reset-btn').onclick = () => {
         if (confirm('Начать заново?')) location.reload();
     };
-});     
+});        
