@@ -1,4 +1,4 @@
-/* ===== Глобальные стили ===== */
+
 * {
     margin: 0;
     padding: 0;
@@ -14,7 +14,7 @@ body {
     line-height: 1.6;
 }
 
-/* ===== Контейнер игры ===== */
+/* Контейнер игры */
 .game-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -27,7 +27,7 @@ body {
     transition: filter 0.3s ease, opacity 0.3s ease;
 }
 
-/* ===== Заголовок ===== */
+/* Заголовок */
 .game-header {
     text-align: center;
     margin-bottom: 25px;
@@ -49,7 +49,7 @@ body {
     font-style: italic;
 }
 
-/* ===== Панель статуса ===== */
+/* Панель статуса */
 .status-bar {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -93,8 +93,6 @@ body {
     box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
 }
 
-/* ✅ УБРАНО: стили для маны */
-/* .bar.mana { ... } */
 
 .status-value {
     font-weight: 600;
@@ -102,7 +100,7 @@ body {
     font-size: 1rem;
 }
 
-/* ✅ НОВОЕ: Эффект резонанса */
+/* Эффект резонанса */
 #resonance-effect {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -114,7 +112,7 @@ body {
     background: radial-gradient(circle, rgba(255,0,0,0.2) 0%, transparent 70%);
 }
 
-/* ✅ Анимация пульсации для критического резонанса */
+/* Анимация пульсации для критического резонанса */
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -148,7 +146,7 @@ body {
     text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
 }
 
-/* ===== Игровой лог ===== */
+/* Игровой лог */
 .game-log {
     background: rgba(20, 20, 35, 0.9);
     border: 2px solid #4a4a6a;
@@ -201,7 +199,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== Панель действий ===== */
+/* Панель действий */
 .actions-panel {
     margin-bottom: 25px;
 }
@@ -244,7 +242,7 @@ body {
     border-color: #3a3a5a;
 }
 
-/* ===== Инвентарь ===== */
+/* Инвентарь */
 .inventory-panel {
     background: rgba(30, 30, 50, 0.8);
     padding: 15px;
@@ -293,7 +291,7 @@ body {
     text-align: center;
 }
 
-/* ===== Системные кнопки ===== */
+/* Системные кнопки */
 .system-controls {
     display: flex;
     gap: 15px;
@@ -329,7 +327,7 @@ body {
     color: #fff;
 }
 
-/* ===== Footer ===== */
+/* Footer */
 .game-footer {
     text-align: center;
     padding-top: 20px;
@@ -338,7 +336,7 @@ body {
     font-size: 0.85rem;
 }
 
-/* ===== Модальное окно ===== */
+/* Модальное окно */
 .modal {
     position: fixed;
     top: 0;
@@ -391,7 +389,7 @@ body {
     line-height: 1.5;
 }
 
-/* ===== Адаптивность для мобильных ===== */
+/* Адаптивность для мобильных */
 @media (max-width: 768px) {
     body {
         padding: 10px;
@@ -446,7 +444,7 @@ body {
     }
 }
 
-/* ===== Скроллбар ===== */
+/* Скроллбар */
 .game-log::-webkit-scrollbar {
     width: 8px;
 }
@@ -465,7 +463,7 @@ body {
     background: #6a6a8a;
 }
 
-/* ===== Эффекты для плохой концовки ===== */
+/* Эффекты для плохой концовки */
 .game-container.ending-bad {
     filter: blur(2px);
     pointer-events: none;
@@ -476,7 +474,6 @@ body {
     filter: none;
 }
 
-/* ===== Скрытие маны (резерв на случай старого кода) ===== */
 .mana-bar, #mana-bar, #mana-text, .bar.mana {
     display: none !important;
 }
