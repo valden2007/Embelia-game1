@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Эмбедия: Истоки Алатар</title>
@@ -8,13 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
-        /* ✅ Анимация пульсации для критического резонанса */
+        /* Анимация пульсации для критического резонанса */
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
         
-        /* ✅ Эффект резонанса (фон) */
+        /* Эффект резонанса (фон) */
         #resonance-effect {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -26,7 +26,6 @@
             background: radial-gradient(circle, rgba(255,0,0,0.2) 0%, transparent 70%);
         }
         
-        /* ✅ Скрытие маны (на случай, если старый код остался) */
         .mana-bar, #mana-bar, #mana-text {
             display: none !important;
         }
@@ -39,7 +38,7 @@
             <p class="subtitle">Текстовая приключенческая игра</p>
         </header>
 
-        <!-- ✅ СТАТУС-БАР (без маны) -->
+        <!-- СТАТУС-БАР -->
         <section class="status-bar">
             <!-- Здоровье -->
             <div class="status-item">
@@ -49,8 +48,7 @@
                 </div>
                 <span id="health-text" class="status-value">100/100</span>
             </div>
-            
-            <!-- ✅ УБРАНА МАНА -->
+        
             
             <!-- Контроль -->
             <div class="status-item">
@@ -70,7 +68,7 @@
                 <span id="intoxication-text" class="status-value">0%</span>
             </div>
             
-            <!-- ✅ Элемент для эффекта резонанса -->
+            <!-- Элемент для эффекта резонанса -->
             <div id="resonance-effect"></div>
         </section>
 
@@ -113,7 +111,6 @@
         </div>
     </div>
 
-    <!-- ✅ СКРИПТЫ В ПРАВИЛЬНОМ ПОРЯДКЕ -->
     <script src="js/data.js"></script>
     <script src="js/player.js"></script>
     <script src="js/ui.js"></script>
