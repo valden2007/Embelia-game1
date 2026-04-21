@@ -50,7 +50,6 @@ const gameData = {
     },
     
     items: {
-        // === СТАРЫЕ ПРЕДМЕТЫ ===
         old_potion: { 
             id: "old_potion", 
             name: "Зелье Вальдена", 
@@ -76,7 +75,6 @@ const gameData = {
             value: 0 
         },
         
-        // === НОВЫЕ ЗАКЛИНАНИЯ (свитки) ===
         light_arrow_scroll: {
             id: "light_arrow_scroll",
             name: "Свиток: Огненная стрела",
@@ -106,7 +104,7 @@ const gameData = {
             spell: { name: "Стихийный взрыв", damage: 40, cost: { control: 40 }, sideEffect: { control: -10 } }
         },
         
-        // === ТРАВЫ ДЛЯ ПЕРВОГО КВЕСТА ===
+        // === Травы для первого квеста ===
         lavender: { 
             id: "lavender", 
             name: "Лаванда", 
@@ -132,7 +130,7 @@ const gameData = {
             value: 0 
         },
         
-        // === ТРАВЫ ДЛЯ ВТОРОГО КВЕСТА ===
+        // === Травы для второго квеста===
         moonroot: { 
             id: "moonroot", 
             name: "Лунный корень", 
@@ -174,7 +172,7 @@ const gameData = {
             value: 0 
         },
         
-        // === ТРАВЫ ДЛЯ МАЗИ ВАЛЬДЕНА ===
+        // === Травы для мази ===
         comfrey: {
             id: "comfrey",
             name: "Окопник",
@@ -208,7 +206,7 @@ const gameData = {
             value: 0
         },
         
-        // === НОВЫЕ ТРАВЫ ДЛЯ БОЕВЫХ ЗЕЛИЙ ===
+        // === Новые травы для зелий===
         frostbloom: {
             id: "frostbloom",
             name: "Морозный цветок",
@@ -226,7 +224,7 @@ const gameData = {
             value: 0
         },
         
-        // === КРАФТОВЫЕ ЗЕЛЬЯ ===
+        // === Зелья ===
         health_potion: { 
             id: "health_potion", 
             name: "Зелье Здоровья", 
@@ -251,7 +249,7 @@ const gameData = {
             effects: { trust: 15 },
             intoxication: 0
         },
-        // === НОВЫЕ БОЕВЫЕ ЗЕЛЬЯ ===
+        // === Новые зелья  ===
         frost_potion: {
             id: "frost_potion",
             name: "Зелье Мороза",
