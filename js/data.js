@@ -206,7 +206,7 @@ const gameData = {
             value: 0
         },
         
-        // === Новые травы для зелий===
+        // === травы для зелий===
         frostbloom: {
             id: "frostbloom",
             name: "Морозный цветок",
@@ -249,7 +249,7 @@ const gameData = {
             effects: { trust: 15 },
             intoxication: 0
         },
-        // === Новые зелья  ===
+        
         frost_potion: {
             id: "frost_potion",
             name: "Зелье Мороза",
@@ -288,7 +288,7 @@ const gameData = {
             result: "healing_ointment",
             description: "Смешай все травы для мази от боли в спине."
         },
-        // === НОВЫЕ РЕЦЕПТЫ ДЛЯ БОЕВЫХ ЗЕЛИЙ ===
+        // === РЕЦЕПТЫ ДЛЯ БОЕВЫХ ЗЕЛИЙ ===
         frost_potion: {
             name: "Зелье Мороза",
             ingredients: ["frostbloom", "waterdrop", "lavender"],
@@ -303,7 +303,7 @@ const gameData = {
         }
     },
 
-    // === НОВАЯ СИСТЕМА БОЕВЫХ НАВЫКОВ ===
+    // === СИСТЕМА БОЕВЫХ НАВЫКОВ ===
     combatSkills: {
         light_arrow: {
             id: "light_arrow",
@@ -929,7 +929,7 @@ const gameData = {
             text: "— Нам нужно сражаться, — спокойно сказал он, поднимая свой магический посох. — Я отвлеку их, а ты используй то, чему я тебя научил.\n\n«Соберись! Вспомни уроки» — пронеслось в голове.",
             speaker: "Вальден",
             choices: [
-                // ✅ ИЗМЕНЕНО: +15 вместо +10
+                
                 { text: "⚔️ «Я прикрою вас!» (Атака)", next: "battle_start", effect: { resonance: 15, control: -5 } },
                 { text: "🛡️ «Я буду защищать» (Защита)", next: "battle_start", effect: { resonance: -5, control: 10 } },
                 { text: "🧘 «Я попробую контролировать» (Контроль)", next: "battle_start", effect: { resonance: 0, control: 15 } }
@@ -943,7 +943,7 @@ const gameData = {
         }
     },
     
-    // === УЛУЧШЕННЫЙ БОЙ С МОРДРЕДОМ ===
+    // ===  БОЙ С МОРДРЕДОМ ===
     mordredBattle: {
         intro: "Мордред Чёрный, десятый из генералов призрачной армии, выходит вперёд. Его доспехи поглощают свет, а на груди — шрам в виде спирали, знак проклятого племени Алатар.",
         
