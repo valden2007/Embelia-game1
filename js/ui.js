@@ -7,7 +7,6 @@ const UI = {
         locationName: null,
         healthBar: null,
         healthText: null,
-        // ✅ УБРАНА МАНА
         levelText: null,
         resonanceText: null,
         controlText: null,
@@ -19,7 +18,6 @@ const UI = {
         modalMessage: null,
         modalClose: null,
         gameContainer: null,
-        // ✅ НОВОЕ: для визуальных эффектов резонанса
         resonanceEffect: null
     },
 
@@ -36,7 +34,6 @@ const UI = {
             locationName: document.getElementById('location-name'),
             healthBar: document.getElementById('health-bar'),
             healthText: document.getElementById('health-text'),
-            // ✅ УБРАНА МАНА
             levelText: document.getElementById('level-text'),
             resonanceText: document.getElementById('corruption-text'),
             controlText: document.getElementById('control-text'),
@@ -47,8 +44,7 @@ const UI = {
             modalTitle: document.getElementById('modal-title'),
             modalMessage: document.getElementById('modal-message'),
             modalClose: document.getElementById('modal-close'),
-            gameContainer: document.querySelector('.game-container'),
-            // ✅ НОВОЕ: элемент для эффекта резонанса
+            gameContainer: document.querySelector('.game-container')
             resonanceEffect: document.getElementById('resonance-effect')
         };
 
@@ -69,13 +65,13 @@ const UI = {
             });
         }
 
-        // ✅ Инициализация эффекта резонанса
+        //  Инициализация эффекта резонанса
         if (this.elements.resonanceEffect) {
             this.elements.resonanceEffect.style.opacity = '0';
             this.elements.resonanceEffect.style.transition = 'opacity 0.5s ease';
         }
 
-        console.log('✅ UI модуль инициализирован');
+        console.log(' UI модуль инициализирован');
         return true;
     },
 
@@ -115,13 +111,12 @@ const UI = {
             }
         }
 
-        // ✅ УБРАНО: обновление маны
 
         if (this.elements.levelText) {
             this.elements.levelText.textContent = p.level;
         }
 
-        // ✅ УЛУЧШЕНО: отображение резонанса с визуальными эффектами
+        //  УЛУЧШЕНО: отображение резонанса с визуальными эффектами
         if (this.elements.resonanceText) {
             this.elements.resonanceText.textContent = `🌀 ${p.resonance}%`;
             
@@ -132,7 +127,7 @@ const UI = {
                 this.elements.resonanceText.style.animation = 'pulse 0.5s infinite';
                 this.elements.resonanceText.title = "⚠️ КРИТИЧЕСКИЙ РЕЗОНАНС! Потеря контроля!";
                 
-                // ✅ Показываем эффект резонанса
+                //  Показываем эффект резонанса
                 if (this.elements.resonanceEffect) {
                     this.elements.resonanceEffect.style.opacity = '1';
                     this.elements.resonanceEffect.style.background = 'radial-gradient(circle, rgba(255,0,0,0.3) 0%, transparent 70%)';
@@ -312,11 +307,10 @@ const UI = {
         if (this.elements.log) this.elements.log.scrollTop = this.elements.log.scrollHeight;
     },
 
-    // === ✅ ОБНОВЛЁННАЯ МИНИ-ИГРА С 5 ЭЛЕМЕНТАМИ ===
+    // ===  ОБНОВЛЁННАЯ МИНИ-ИГРА С 5 ЭЛЕМЕНТАМИ ===
     showParticleGame(onComplete) {
         console.log('🎮 Запуск мини-игры с частицами...');
-        
-        // Очищаем старую мини-игру если есть
+    
         this.hideParticleGame();
         
         let gameArea = document.getElementById('particle-game-area');
@@ -325,16 +319,16 @@ const UI = {
             gameArea.id = 'particle-game-area';
             gameArea.style.cssText = 'margin:20px 0; text-align:center; padding:20px; background:rgba(20,20,40,0.95); border-radius:15px; border:2px solid #9d4edd; position:relative; min-height:350px; z-index:5;';
             
-            // Вставляем ПОСЛЕ лога, ПЕРЕД кнопками действий — более надёжный способ
+        
             const log = document.getElementById('game-log');
             const actionsPanel = document.querySelector('.actions-panel');
             
             if (log && actionsPanel && log.parentNode) {
-                // Находим родителя и вставляем между логом и панелью действий
+              
                 const parent = log.parentNode;
                 parent.insertBefore(gameArea, actionsPanel);
             } else if (log && log.parentNode) {
-                // Запасной вариант: после лога
+                
                 log.parentNode.insertBefore(gameArea, log.nextSibling);
             }
         }
@@ -467,7 +461,6 @@ const UI = {
                         setTimeout(() => {
                             gameArea.style.display = 'none';
                             if (gameArea.parentNode) gameArea.remove();
-                            // ✅ Гарантированный вызов onComplete
                             if (typeof onComplete === 'function') {
                                 try { onComplete(); } catch(e) { console.error('onComplete error:', e); }
                             }
@@ -508,13 +501,13 @@ const UI = {
         this.log(text, 'combat');
         this.log('════════════════════════════════', 'system');
         
-        // ✅ Блокируем интерфейс
+        //  Блокируем интерфейс
         if (this.elements.actionButtons) {
             this.elements.actionButtons.style.pointerEvents = 'none';
             this.elements.actionButtons.style.opacity = '0.5';
         }
         
-        // ✅ Добавляем эффект затемнения
+        //  Добавляем эффект затемнения
         if (this.elements.gameContainer) {
             this.elements.gameContainer.style.filter = 'blur(2px)';
         }
