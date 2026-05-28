@@ -23,7 +23,7 @@ const Game = {
         
         UI.updateLocation("Серебряный Бор: Тропа");
         
-        // ✅ НАЧАЛЬНЫЕ ХАРАКТЕРИСТИКИ (убрана мана)
+        // НАЧАЛЬНЫЕ ХАРАКТЕРИСТИКИ 
         window.player.health = 100;
         window.player.maxHealth = 100;
         UI.updateStatus();
@@ -77,7 +77,7 @@ const Game = {
         UI.updateLocation("Дно Оврага");
         UI.log('💥 Обвал! Вы срываетесь вниз...', 'combat');
         
-        // ✅ ИСПРАВЛЕНО: УСТАНАВЛИВАЕМ HP = 80 СРАЗУ ПРИ ПАДЕНИИ В ОВРАГ
+        // HP = 80 СРАЗУ ПРИ ПАДЕНИИ В ОВРАГ
         window.player.health = 80;
         UI.updateStatus();
         
@@ -121,7 +121,6 @@ const Game = {
         this.inCombat = true; 
         this.turn = 0;
         
-        // ✅ УБРАНО: больше не устанавливаем HP здесь, так как это сделано при падении
         if (window.player.health > 80) {
             window.player.health = 80;
             UI.updateStatus();
@@ -131,7 +130,7 @@ const Game = {
         UI.log('Цель: продержаться 2 хода до прибытия Вальдена.', 'system');
         UI.log('⚠️ У вас мало шансов выжить, если будете только атаковать!', 'combat');
         
-        // ✅ ПЕРВАЯ НЕБЛОКИРУЕМАЯ АТАКА ЧЕРЕЗ 1.5 СЕКУНДЫ
+        //  ПЕРВАЯ НЕБЛОКИРУЕМАЯ АТАКА ЧЕРЕЗ 1.5 СЕКУНДЫ
         setTimeout(() => {
             const firstHitDmg = 25 + Math.floor(Math.random() * 6);
             window.player.health = Math.max(0, window.player.health - firstHitDmg);
@@ -621,7 +620,7 @@ const Game = {
              return;
         }
 
-        // Показываем вступление только один раз
+        // Показываем вступление один раз
         if (!this.mordredIntroShown) {
             if (battle.intro) {
                 UI.log(battle.intro, 'combat');
@@ -633,7 +632,7 @@ const Game = {
         this.renderBattleChoices(battle.choices, battle);
     },
 
-    // ✅ Новая функция для рендера выборов в любой фазе боя
+    // функция для рендера выборов в любой фазе боя
     renderBattleChoices(choices, battle) {
         const buttons = choices.map(choice => {
             if (choice.condition) {
@@ -655,7 +654,7 @@ const Game = {
                         UI.updateStatus();
                     }
                     
-                    // ✅ ПРОВЕРКА РЕЗОНАНСА ПОСЛЕ ВЫБОРА
+                    // ПРОВЕРКА РЕЗОНАНСА ПОСЛЕ ВЫБОРА
                     if (window.player.resonance >= 90) {
                         this.showChapter2BadEnding();
                         return;
@@ -672,7 +671,7 @@ const Game = {
         UI.renderButtons(buttons);
     },
 
-    // ✅ Новая функция для обработки фаз боя (узлов в data.js)
+    //  функция для обработки фаз боя (узлов в data.js)
     renderMordredPhase(phaseKey, battle) {
         const node = battle[phaseKey];
         if (!node) {
@@ -685,9 +684,9 @@ const Game = {
             UI.log(node.text, 'system');
         }
 
-        // Если есть концовки (например, chapter2_end)
+        // Если есть концовки 
         if (node.endings) {
-            let endingKey = 'balance'; // По умолчанию
+            let endingKey = 'balance'; 
             if (window.player.resonance > 60) endingKey = 'power';
             else if (window.player.control > 70) endingKey = 'peace';
             
@@ -717,7 +716,7 @@ const Game = {
         }
     },
 
-    // ✅ Функция для плохой концовки (потеря контроля)
+    //  Функция для плохой концовки (потеря контроля)
     showChapter2BadEnding() {
         UI.log('══════════════════════════════', 'system');
         UI.log('🌀 СИЛА АЛАТАР ВЫРЫВАЕТСЯ НАРУЖУ!', 'combat');
@@ -740,10 +739,8 @@ const Game = {
     },
 
     endChapter2() {
-        // Эта функция больше не нужна, так как логика перенесена в renderMordredPhase
-        // Но оставим для совместимости, если где-то вызывается
         const ending = gameData.mordredBattle.chapter2_end;
-        // ...
+        
     },
 
     runStoryNode(nodeId) {
