@@ -4,11 +4,10 @@ const player = {
     experience: 0,
     health: 100,
     maxHealth: 100,
-    // ✅ УБРАНА МАНА
     strength: 8,
     resonance: 10,
     control: 50,
-    trust: 50,                    // ✅ Доверие Вальдену (0-100)
+    trust: 50,                    //  Доверие Вальдену
     intoxication: 0,
     maxIntoxication: 100,
     inventory: ["burnt_drawing"],
@@ -18,9 +17,9 @@ const player = {
     hutVisited: false,
     trainingComplete: false,
     ch1Complete: false,
-    ointmentGiven: false,         // ✅ Флаг для квеста с мазью
-    drawingBurned: false,         // ✅ Флаг для рисунка
-    spatialAttacksUsed: 0,        // ✅ Счётчик пространственных атак (для отладки/будущего)
+    ointmentGiven: false,         //  Флаг для квеста с мазью
+    drawingBurned: false,         //  Флаг для рисунка
+    spatialAttacksUsed: 0,        //  Счётчик пространственных атак (для отладки/будущего)
 
     takeDamage(amount) {
         let dmg = this.isDefending ? Math.floor(amount / 2) : amount;
@@ -33,7 +32,7 @@ const player = {
         this.health = Math.min(this.maxHealth, this.health + amount);
     },
 
-    // ✅ УБРАНА restoreMana
+    
 
     addItem(id) {
         if (!this.inventory.includes(id)) {
@@ -98,12 +97,12 @@ const player = {
     addResonance(amount) {
         this.resonance = Math.max(0, Math.min(100, this.resonance + amount));
         
-        // ✅ ЛОГИКА: если резонанс > 70, контроль начинает падать
+        //  ЛОГИКА: если резонанс > 70, контроль начинает падать
         if (this.resonance > 70) {
             this.control = Math.max(0, this.control - Math.abs(amount));
         }
         
-        // ✅ ОТЛАДКА: считаем пространственные атаки (если нужно)
+        //  ОТЛАДКА: считаем пространственные атаки (если нужно)
         if (amount === 15) {
             this.spatialAttacksUsed++;
         }
@@ -129,17 +128,17 @@ const player = {
         return this.health <= 0;
     },
 
-    // ✅ ПРОВЕРКА ПЛОХОЙ КОНЦОВКИ: 90% резонанса = потеря контроля
+    //  ПРОВЕРКА ПЛОХОЙ КОНЦОВКИ: 90% резонанса = потеря контроля
     checkBadEnding() {
         return this.resonance >= 90 || this.intoxication >= 95 || this.health <= 0;
     },
 
-    // ✅ ВСПОМОГАТЕЛЬНЫЙ МЕТОД: получить текущий уровень резонанса
+    //  ВСПОМОГАТЕЛЬНЫЙ МЕТОД: получить текущий уровень резонанса
     getResonance() {
         return this.resonance;
     },
 
-    // ✅ ВСПОМОГАТЕЛЬНЫЙ МЕТОД: получить текущий уровень контроля
+    //  ВСПОМОГАТЕЛЬНЫЙ МЕТОД: получить текущий уровень контроля
     getControl() {
         return this.control;
     },
