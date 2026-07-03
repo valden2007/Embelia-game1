@@ -44,7 +44,7 @@ const UI = {
             modalTitle: document.getElementById('modal-title'),
             modalMessage: document.getElementById('modal-message'),
             modalClose: document.getElementById('modal-close'),
-            gameContainer: document.querySelector('.game-container')
+            gameContainer: document.querySelector('.game-container'),
             resonanceEffect: document.getElementById('resonance-effect')
         };
 
